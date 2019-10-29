@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.sap.cloud.lm.sl.cf.client.ResilientCloudControllerClient;
 import com.sap.cloud.lm.sl.cf.core.util.ApplicationConfiguration;
+import com.sap.cloud.lm.sl.cf.core.util.UserMessageLogger;
 
 @Named
 public class CloudFoundryClientFactory extends ClientFactory {
@@ -25,9 +26,11 @@ public class CloudFoundryClientFactory extends ClientFactory {
     private final ApplicationConfiguration configuration;
     private final CloudControllerRestClientFactory clientFactory;
     private final OAuthClientFactory oAuthClientFactory;
+    private final OperationsPerformanceMonitor operationsPerformanceMonitor;
 
     @Inject
-    public CloudFoundryClientFactory(ApplicationConfiguration configuration, OAuthClientFactory oAuthClientFactory) {
+    public CloudFoundryClientFactory(ApplicationConfiguration configuration, OAuthClientFactory oAuthClientFactory,
+                                     OperationsPerformanceMonitor operationsPerformanceMonitor) {
         this.clientFactory = ImmutableCloudControllerRestClientFactory.builder()
                                                                       .clientConnectTimeout(configuration.getControllerClientConnectTimeout())
                                                                       .clientConnectionPoolSize(configuration.getControllerClientConnectionPoolSize())
@@ -36,36 +39,44 @@ public class CloudFoundryClientFactory extends ClientFactory {
                                                                       .build();
         this.configuration = configuration;
         this.oAuthClientFactory = oAuthClientFactory;
+        this.operationsPerformanceMonitor = operationsPerformanceMonitor;
     }
 
     @Override
-    protected CloudControllerClient createClient(CloudCredentials credentials) {
+    protected CloudControllerClient createClient(CloudCredentials credentials, UserMessageLogger userMessageLogger) {
         OAuthClient oAuthClient = oAuthClientFactory.createOAuthClient();
         CloudControllerRestClient controllerClient = clientFactory.createClient(configuration.getControllerUrl(), credentials, null,
                                                                                 oAuthClient);
         addTaggingInterceptor(controllerClient.getRestTemplate());
-        return new ResilientCloudControllerClient(controllerClient);
+        return createClient(controllerClient, userMessageLogger);
     }
 
     @Override
-    protected CloudControllerClient createClient(CloudCredentials credentials, String org, String space) {
+    protected CloudControllerClient createClient(CloudCredentials credentials, String org, String space,
+                                                 UserMessageLogger userMessageLogger) {
         OAuthClient oAuthClient = oAuthClientFactory.createOAuthClient();
         CloudControllerRestClient controllerClient = clientFactory.createClient(configuration.getControllerUrl(), credentials, org, space,
                                                                                 oAuthClient);
+
         addTaggingInterceptor(controllerClient.getRestTemplate(), org, space);
-        return new ResilientCloudControllerClient(controllerClient);
+        return createClient(controllerClient, userMessageLogger);
     }
 
     @Override
-    protected CloudControllerClient createClient(CloudCredentials credentials, String spaceId) {
-        CloudSpace target = computeTarget(credentials, spaceId);
+    protected CloudControllerClient createClient(CloudCredentials credentials, String spaceId, UserMessageLogger userMessageLogger) {
+        CloudSpace target = computeTarget(credentials, spaceId, userMessageLogger);
         OAuthClient oAuthClient = oAuthClientFactory.createOAuthClient();
         CloudControllerRestClient controllerClient = clientFactory.createClient(configuration.getControllerUrl(), credentials, target,
                                                                                 oAuthClient);
         addTaggingInterceptor(controllerClient.getRestTemplate(), target.getOrganization()
                                                                         .getName(),
                               target.getName());
-        return new ResilientCloudControllerClient(controllerClient);
+        return createClient(controllerClient, userMessageLogger);
+    }
+
+    private CloudControllerClient createClient(CloudControllerRestClient controllerClient, UserMessageLogger userMessageLogger) {
+        return userMessageLogger == null ? new ResilientCloudControllerClient(controllerClient)
+            : new CloudControllerClientPerformanceLogger(controllerClient, userMessageLogger, operationsPerformanceMonitor);
     }
 
     private void addTaggingInterceptor(RestTemplate template) {
@@ -82,8 +93,8 @@ public class CloudFoundryClientFactory extends ClientFactory {
                 .add(requestInterceptor);
     }
 
-    protected CloudSpace computeTarget(CloudCredentials credentials, String spaceId) {
-        CloudControllerClient clientWithoutTarget = createClient(credentials);
+    protected CloudSpace computeTarget(CloudCredentials credentials, String spaceId, UserMessageLogger userMessageLogger) {
+        CloudControllerClient clientWithoutTarget = createClient(credentials, userMessageLogger);
         return clientWithoutTarget.getSpace(UUID.fromString(spaceId));
     }
 }

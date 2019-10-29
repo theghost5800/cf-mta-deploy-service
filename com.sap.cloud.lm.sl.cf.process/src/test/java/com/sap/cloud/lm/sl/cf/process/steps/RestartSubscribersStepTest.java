@@ -1,5 +1,6 @@
 package com.sap.cloud.lm.sl.cf.process.steps;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -18,6 +19,7 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 
 import com.sap.cloud.lm.sl.cf.client.lib.domain.ImmutableCloudApplicationExtended;
+import com.sap.cloud.lm.sl.cf.core.util.UserMessageLogger;
 
 public class RestartSubscribersStepTest extends SyncFlowableStepTest<RestartSubscribersStep> {
 
@@ -34,9 +36,9 @@ public class RestartSubscribersStepTest extends SyncFlowableStepTest<RestartSubs
 
         // Then:
         Mockito.verify(clientProvider, Mockito.atLeastOnce())
-               .getControllerClient(eq(USER_NAME), eq("org"), eq("space-foo"), anyString());
+               .getControllerClient(eq(USER_NAME), eq("org"), eq("space-foo"), anyString(), any(UserMessageLogger.class));
         Mockito.verify(clientProvider, Mockito.atLeastOnce())
-               .getControllerClient(eq(USER_NAME), eq("org"), eq("space-bar"), anyString());
+               .getControllerClient(eq(USER_NAME), eq("org"), eq("space-bar"), anyString(), any(UserMessageLogger.class));
     }
 
     @Test
@@ -49,9 +51,11 @@ public class RestartSubscribersStepTest extends SyncFlowableStepTest<RestartSubs
 
         CloudControllerClient clientForSpaceFoo = Mockito.mock(CloudControllerClient.class);
         CloudControllerClient clientForSpaceBar = Mockito.mock(CloudControllerClient.class);
-        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-foo"), anyString()))
+        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-foo"), anyString(),
+                                                        any(UserMessageLogger.class)))
                .thenReturn(clientForSpaceFoo);
-        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-bar"), anyString()))
+        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-bar"), anyString(),
+                                                        any(UserMessageLogger.class)))
                .thenReturn(clientForSpaceBar);
 
         // When:
@@ -80,9 +84,11 @@ public class RestartSubscribersStepTest extends SyncFlowableStepTest<RestartSubs
         CloudControllerClient clientForSpaceFoo = Mockito.mock(CloudControllerClient.class);
         CloudControllerClient clientForSpaceBar = Mockito.mock(CloudControllerClient.class);
 
-        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-foo"), anyString()))
+        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-foo"), anyString(),
+                                                        any(UserMessageLogger.class)))
                .thenReturn(clientForSpaceFoo);
-        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-bar"), anyString()))
+        Mockito.when(clientProvider.getControllerClient(eq(USER_NAME), eq("org"), eq("space-bar"), anyString(),
+                                                        any(UserMessageLogger.class)))
                .thenReturn(clientForSpaceBar);
 
         // When:

@@ -47,6 +47,7 @@ import com.sap.cloud.lm.sl.cf.core.persistence.query.ConfigurationSubscriptionQu
 import com.sap.cloud.lm.sl.cf.core.persistence.service.ConfigurationEntryService;
 import com.sap.cloud.lm.sl.cf.core.persistence.service.ConfigurationSubscriptionService;
 import com.sap.cloud.lm.sl.cf.core.util.MockBuilder;
+import com.sap.cloud.lm.sl.cf.core.util.UserMessageLogger;
 import com.sap.cloud.lm.sl.cf.process.Constants;
 import com.sap.cloud.lm.sl.common.util.JsonUtil;
 import com.sap.cloud.lm.sl.common.util.TestUtil;
@@ -213,7 +214,8 @@ public class UpdateSubscribersStepTest extends SyncFlowableStepTest<UpdateSubscr
         String orgName = space.getOrganization()
                               .getName();
         String spaceName = space.getName();
-        when(clientProvider.getControllerClient(eq(USER), eq(orgName), eq(spaceName), anyString())).thenReturn(clientMock);
+        when(clientProvider.getControllerClient(eq(USER), eq(orgName), eq(spaceName), anyString(),
+                                                any(UserMessageLogger.class))).thenReturn(clientMock);
     }
 
     private Map<CloudSpace, CloudControllerClient> createClientsForSpacesOfSubscribedApps() {

@@ -24,8 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cloud.lm.sl.cf.core.cf.CloudControllerClientProvider;
+import com.sap.cloud.lm.sl.cf.core.cf.OperationsPerformanceMonitor;
 import com.sap.cloud.lm.sl.cf.core.persistence.service.ProgressMessageService;
 import com.sap.cloud.lm.sl.cf.core.util.ApplicationConfiguration;
+import com.sap.cloud.lm.sl.cf.core.util.UserMessageLogger;
 import com.sap.cloud.lm.sl.cf.persistence.services.FileService;
 import com.sap.cloud.lm.sl.cf.persistence.services.ProcessLoggerProvider;
 import com.sap.cloud.lm.sl.cf.persistence.services.ProcessLogsPersistenceService;
@@ -71,6 +73,8 @@ public abstract class SyncFlowableStepTest<T extends SyncFlowableStep> {
     @Mock
     protected ProcessEngineConfiguration processEngineConfiguration;
     protected final ProcessLoggerProvider processLoggerProvider = Mockito.spy(ProcessLoggerProvider.class);
+    @Mock
+    protected OperationsPerformanceMonitor operationsPerformanceMonitor;
     @InjectMocks
     protected ProcessLogsPersister processLogsPersister = Mockito.spy(ProcessLogsPersister.class);
 
@@ -90,8 +94,8 @@ public abstract class SyncFlowableStepTest<T extends SyncFlowableStep> {
         context.setVariable(com.sap.cloud.lm.sl.cf.persistence.Constants.VARIABLE_NAME_SPACE_ID, SPACE_GUID);
         context.setVariable(Constants.VAR_USER, USER_NAME);
         context.setVariable(Constants.VAR_ORG, ORG_NAME);
-        when(clientProvider.getControllerClient(any(), any())).thenReturn(client);
-        when(clientProvider.getControllerClient(any(), any(), any(), any())).thenReturn(client);
+        when(clientProvider.getControllerClient(any(), any(), any(UserMessageLogger.class))).thenReturn(client);
+        when(clientProvider.getControllerClient(any(), any(), any(), any(), any(UserMessageLogger.class))).thenReturn(client);
         context.setVariable("correlationId", getCorrelationId());
         context.setVariable("__TASK_ID", getTaskId());
         prepareExecution();

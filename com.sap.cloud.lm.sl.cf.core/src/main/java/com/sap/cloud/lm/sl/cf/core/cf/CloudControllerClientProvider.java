@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
 import com.sap.cloud.lm.sl.cf.core.cf.service.TokenService;
 import com.sap.cloud.lm.sl.cf.core.message.Messages;
+import com.sap.cloud.lm.sl.cf.core.util.UserMessageLogger;
 import com.sap.cloud.lm.sl.common.SLException;
 
 @Named
@@ -40,9 +41,10 @@ public class CloudControllerClientProvider {
      * @param processId the processId for the client
      * @return a CF client for the specified access token, organization, and space
      */
-    public CloudControllerClient getControllerClient(String userName, String org, String space, String processId) {
+    public CloudControllerClient getControllerClient(String userName, String org, String space, String processId,
+                                                     UserMessageLogger userMessageLogger) {
         try {
-            return getClientFromCache(userName, org, space, processId);
+            return getClientFromCache(userName, org, space, processId, userMessageLogger);
         } catch (CloudOperationException e) {
             throw new SLException(e, Messages.CANT_CREATE_CLIENT_2, org, space);
         }
@@ -59,7 +61,7 @@ public class CloudControllerClientProvider {
      */
     public CloudControllerClient getControllerClient(String userName, String spaceGuid, String processId) {
         try {
-            return getClientFromCache(userName, spaceGuid, processId);
+            return getClientFromCache(userName, spaceGuid, processId, null, null);
         } catch (CloudOperationException e) {
             throw new SLException(e, Messages.CANT_CREATE_CLIENT_FOR_SPACE_ID, spaceGuid);
         }
@@ -74,7 +76,23 @@ public class CloudControllerClientProvider {
      */
     public CloudControllerClient getControllerClient(String userName, String spaceGuid) {
         try {
-            return getClientFromCache(userName, spaceGuid);
+            return getClientFromCache(userName, spaceGuid, null);
+        } catch (CloudOperationException e) {
+            throw new SLException(e, Messages.CANT_CREATE_CLIENT_FOR_SPACE_ID, spaceGuid);
+        }
+    }
+
+    /**
+     * Returns a client for the specified user name and space id by either getting it from the clients cache or creating a new one.
+     *
+     * @param userName the user name associated with the client
+     * @param spaceGuid the space guid associated with the client
+     * @param userMessageLogger the logger which will be used for logging
+     * @return a CF client for the specified access token, organization, and space
+     */
+    public CloudControllerClient getControllerClient(String userName, String spaceGuid, UserMessageLogger userMessageLogger) {
+        try {
+            return getClientFromCache(userName, spaceGuid, userMessageLogger);
         } catch (CloudOperationException e) {
             throw new SLException(e, Messages.CANT_CREATE_CLIENT_FOR_SPACE_ID, spaceGuid);
         }
@@ -88,7 +106,7 @@ public class CloudControllerClientProvider {
      */
     public CloudControllerClient getControllerClient(String userName) {
         try {
-            return clientFactory.createClient(getValidToken(userName));
+            return clientFactory.createClient(getValidToken(userName), null);
         } catch (CloudOperationException e) {
             throw new SLException(e, Messages.CANT_CREATE_CLIENT);
         }
@@ -129,16 +147,13 @@ public class CloudControllerClientProvider {
         return token;
     }
 
-    private CloudControllerClient getClientFromCache(String userName, String org, String space) {
-        return getClientFromCache(userName, org, space, null);
-    }
-
-    private CloudControllerClient getClientFromCache(String userName, String org, String space, String processId) {
+    private CloudControllerClient getClientFromCache(String userName, String org, String space, String processId,
+                                                     UserMessageLogger userMessageLogger) {
         // Get a client from the cache or create a new one if needed
         String key = getKey(userName, org, space);
         CloudControllerClient client = clients.get(key);
         if (client == null) {
-            client = clientFactory.createClient(getValidToken(userName), org, space);
+            client = clientFactory.createClient(getValidToken(userName), org, space, userMessageLogger);
             if (processId != null) {
                 clients.put(key, client);
             }
@@ -146,10 +161,26 @@ public class CloudControllerClientProvider {
         return client;
     }
 
-    private CloudControllerClient getClientFromCache(String userName, String spaceId) {
+    private CloudControllerClient getClientFromCache(String userName, String spaceId, UserMessageLogger userMessageLogger) {
         // Get a client from the cache or create a new one if needed
-        String key = getKey(userName, spaceId);
-        return clients.computeIfAbsent(key, k -> clientFactory.createClient(getValidToken(userName), spaceId));
+        String key = getKey(userName, spaceId, userMessageLogger);
+        CloudControllerClient client = clients.get(key);
+        if (shouldCreateClient(client, userMessageLogger)) {
+            client = clientFactory.createClient(getValidToken(userName), spaceId, userMessageLogger);
+            clients.put(key, client);
+        }
+        return client;
+    }
+
+    private boolean shouldCreateClient(CloudControllerClient client, UserMessageLogger userMessageLogger) {
+        if (client == null) {
+            return true;
+        }
+        if (userMessageLogger != null && client instanceof CloudControllerClientPerformanceLogger) {
+            UserMessageLogger cachedUserMessageLogger = ((CloudControllerClientPerformanceLogger) client).getUserMessageLogger();
+            return !userMessageLogger.equals(cachedUserMessageLogger);
+        }
+        return false;
     }
 
     private String getKey(String userName, String org, String space) {
@@ -158,5 +189,12 @@ public class CloudControllerClientProvider {
 
     private String getKey(String userName, String spaceId) {
         return userName + '|' + spaceId;
+    }
+
+    private String getKey(String userName, String spaceId, UserMessageLogger userMessageLogger) {
+        if (userMessageLogger == null) {
+            return getKey(userName, spaceId);
+        }
+        return userName + '|' + spaceId + '|' + userMessageLogger.hashCode();
     }
 }

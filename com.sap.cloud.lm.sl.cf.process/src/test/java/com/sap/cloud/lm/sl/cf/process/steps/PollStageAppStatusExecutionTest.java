@@ -24,6 +24,7 @@ import com.sap.cloud.lm.sl.cf.client.lib.domain.CloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.client.lib.domain.ImmutableCloudApplicationExtended;
 import com.sap.cloud.lm.sl.cf.core.cf.CloudControllerClientProvider;
 import com.sap.cloud.lm.sl.cf.core.cf.clients.RecentLogsRetriever;
+import com.sap.cloud.lm.sl.cf.core.util.UserMessageLogger;
 import com.sap.cloud.lm.sl.cf.persistence.services.ProcessLoggerProvider;
 import com.sap.cloud.lm.sl.cf.process.Constants;
 import com.sap.cloud.lm.sl.cf.process.mock.MockDelegateExecution;
@@ -104,7 +105,7 @@ public class PollStageAppStatusExecutionTest {
     }
 
     private void prepareClientProvider() {
-        when(clientProvider.getControllerClient(any(), any())).thenReturn(client);
+        when(clientProvider.getControllerClient(any(), any(), any(UserMessageLogger.class))).thenReturn(client);
     }
 
     private void prepareClient(CloudApplicationExtended application) {
