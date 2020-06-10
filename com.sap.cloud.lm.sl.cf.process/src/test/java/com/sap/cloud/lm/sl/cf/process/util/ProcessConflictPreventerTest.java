@@ -2,6 +2,9 @@ package com.sap.cloud.lm.sl.cf.process.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,29 +39,39 @@ public class ProcessConflictPreventerTest {
 
     @Test
     public void testAcquireLock() {
-        try {
-            Operation operation = ImmutableOperation.builder()
-                                                    .processId(testProcessId)
-                                                    .processType(ProcessType.DEPLOY)
-                                                    .spaceId(testSpaceId)
-                                                    .mtaId(testMtaId)
-                                                    .hasAcquiredLock(false)
-                                                    .build();
-            when(operationServiceMock.createQuery()
-                                     .list()).thenReturn(Collections.singletonList(operation));
-            processConflictPreventerMock.acquireLock(testMtaId, testSpaceId, testProcessId);
-            Operation op = operationServiceMock.createQuery()
-                                               .processId(testProcessId)
-                                               .singleResult();
-            verify(operationServiceMock).update(op.getProcessId(), op);
-        } catch (SLException e) {
-            assertEquals("Conflicting process \"test-process-id\" found for MTA \"test-mta-id\"", e.getMessage());
-        }
+        SLException exception = assertThrows(SLException.class, this::tryToAcquireLock);
+        assertEquals("Conflicting process \"test-process-id\" found for MTA \"test-mta-id\"", exception.getMessage());
+    }
+
+    private void tryToAcquireLock() {
+        Operation operation = ImmutableOperation.builder()
+                                                .processId(testProcessId)
+                                                .processType(ProcessType.DEPLOY)
+                                                .spaceId(testSpaceId)
+                                                .mtaId(testMtaId)
+                                                .hasAcquiredLock(false)
+                                                .build();
+        when(operationServiceMock.createQuery()
+                                 .list()).thenReturn(Collections.singletonList(operation));
+        processConflictPreventerMock.acquireLock(testMtaId, testSpaceId, testProcessId);
+        Operation op = operationServiceMock.createQuery()
+                                           .processId(testProcessId)
+                                           .singleResult();
+        verify(operationServiceMock).update(op.getProcessId(), op);
     }
 
     @Test
     public void testAcquireLockWithNoConflictingOperations() {
         assertDoesNotThrow(() -> processConflictPreventerMock.acquireLock(testMtaId, testSpaceId, testProcessId));
+    }
+
+    @Test
+    void testReleaseLock() {
+        Operation.State abortedState = Operation.State.ABORTED;
+
+        processConflictPreventerMock.releaseLock(testProcessId, abortedState);
+
+        verify(operationServiceMock).update(eq(testProcessId), argThat(this::assertOperationAbort));
     }
 
     private OperationService getOperationServiceMock() throws SLException {
@@ -78,6 +91,20 @@ public class ProcessConflictPreventerTest {
                                  .mtaId(testMtaId)
                                  .hasAcquiredLock(false)
                                  .build();
+    }
+
+    private boolean assertOperationAbort(Operation operation) {
+        return operation.getProcessId()
+                        .equals(testProcessId)
+            && operation.getProcessType()
+                        .equals(ProcessType.DEPLOY)
+            && operation.getMtaId()
+                        .equals(testMtaId)
+            && operation.hasAcquiredLock()
+                        .equals(false)
+            && operation.getState()
+                        .equals(Operation.State.ABORTED)
+            && operation.getEndedAt() != null;
     }
 
 }

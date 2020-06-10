@@ -9,6 +9,7 @@ import com.sap.cloud.lm.sl.cf.core.model.HistoricOperationEvent.EventType;
 import com.sap.cloud.lm.sl.cf.core.persistence.service.OperationService;
 import com.sap.cloud.lm.sl.cf.process.util.HistoricOperationEventPersister;
 import com.sap.cloud.lm.sl.cf.process.util.ProcessConflictPreventer;
+import com.sap.cloud.lm.sl.cf.web.api.model.Operation;
 
 @Named
 public class AbortProcessAction extends ProcessAction {
@@ -29,12 +30,12 @@ public class AbortProcessAction extends ProcessAction {
     @Override
     public void executeActualProcessAction(String user, String superProcessInstanceId) {
         flowableFacade.setAbortVariable(superProcessInstanceId);
-        releaseOperationLock(superProcessInstanceId);
+        releaseOperationLock(superProcessInstanceId, Operation.State.ABORTED);
         historicEventPersister.add(superProcessInstanceId, EventType.ABORTED);
     }
 
-    private void releaseOperationLock(String superProcessInstanceId) {
-        getProcessConflictPreventer().releaseLock(superProcessInstanceId);
+    private void releaseOperationLock(String superProcessInstanceId, Operation.State state) {
+        getProcessConflictPreventer().releaseLock(superProcessInstanceId, state);
     }
 
     protected ProcessConflictPreventer getProcessConflictPreventer() {
