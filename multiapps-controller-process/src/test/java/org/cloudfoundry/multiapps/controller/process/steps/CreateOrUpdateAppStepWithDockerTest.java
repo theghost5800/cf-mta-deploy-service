@@ -106,8 +106,8 @@ public class CreateOrUpdateAppStepWithDockerTest extends CreateOrUpdateAppStepBa
     }
 
     @Override
-    protected CreateOrUpdateAppStep createStep() {
-        return new CreateOrUpdateAppStep();
+    protected OldCreateOrUpdateAppStep createStep() {
+        return new OldCreateOrUpdateAppStep();
     }
 
 }

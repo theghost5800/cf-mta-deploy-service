@@ -38,7 +38,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
-class CreateOrUpdateStepWithExistingAppTest extends SyncFlowableStepTest<CreateOrUpdateAppStep> {
+class CreateOrUpdateStepWithExistingAppTest extends SyncFlowableStepTest<OldCreateOrUpdateAppStep> {
 
     private static final ApplicationServicesUpdateCallback CALLBACK = ApplicationServicesUpdateCallback.DEFAULT_APPLICATION_SERVICES_UPDATE_CALLBACK;
 
@@ -358,11 +358,11 @@ class CreateOrUpdateStepWithExistingAppTest extends SyncFlowableStepTest<CreateO
     }
 
     @Override
-    protected CreateOrUpdateAppStep createStep() {
+    protected OldCreateOrUpdateAppStep createStep() {
         return new CreateAppStepMock();
     }
 
-    private static class CreateAppStepMock extends CreateOrUpdateAppStep {
+    private static class CreateAppStepMock extends OldCreateOrUpdateAppStep {
         @Override
         protected ApplicationServicesUpdateCallback getApplicationServicesUpdateCallback(ProcessContext context) {
             return CALLBACK;

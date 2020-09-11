@@ -24,6 +24,7 @@ import org.cloudfoundry.multiapps.controller.core.model.ConfigurationSubscriptio
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.ErrorType;
 import org.cloudfoundry.multiapps.controller.core.model.Phase;
+import org.cloudfoundry.multiapps.controller.core.model.ServiceBindingActionsToExecute;
 import org.cloudfoundry.multiapps.controller.core.model.ServiceOperation;
 import org.cloudfoundry.multiapps.controller.core.model.SubprocessPhase;
 import org.cloudfoundry.multiapps.controller.persistence.model.FileEntry;
@@ -291,9 +292,9 @@ public interface Variables {
                                                                                            .type(Variable.typeReference(CloudServiceInstanceExtended.class))
                                                                                            .build();
     Variable<CloudPackage> CLOUD_PACKAGE = ImmutableJsonStringVariable.<CloudPackage> builder()
-                                                                    .name("uploadedCloudPackage")
-                                                                    .type(Variable.typeReference(CloudPackage.class))
-                                                                    .build();
+                                                                      .name("uploadedCloudPackage")
+                                                                      .type(Variable.typeReference(CloudPackage.class))
+                                                                      .build();
     Variable<Hook> HOOK_FOR_EXECUTION = ImmutableJsonStringVariable.<Hook> builder()
                                                                    .name("hookForExecution")
                                                                    .type(Variable.typeReference(Hook.class))
@@ -541,5 +542,11 @@ public interface Variables {
                                                                       .name("missingDefaultDomain")
                                                                       .defaultValue(false)
                                                                       .build();
+    Variable<List<ServiceBindingActionsToExecute>> SERVICES_BINDING_ACTIONS_TO_EXECUTE = ImmutableSimpleVariable.<List<ServiceBindingActionsToExecute>> builder()
+                                                                                                                .name("servicesBindingActionsToExecute")
+                                                                                                                .build();
+    Variable<ServiceBindingActionsToExecute> SERVICE_BINDING_ACTIONS_TO_EXECUTE = ImmutableSimpleVariable.<ServiceBindingActionsToExecute> builder()
+                                                                                                         .name("serviceBindingActionsToExecute")
+                                                                                                         .build();
 
 }

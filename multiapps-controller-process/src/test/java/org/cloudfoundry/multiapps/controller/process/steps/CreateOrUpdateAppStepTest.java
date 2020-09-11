@@ -218,11 +218,11 @@ public class CreateOrUpdateAppStepTest extends CreateOrUpdateAppStepBaseTest {
     }
 
     @Override
-    protected CreateOrUpdateAppStep createStep() {
+    protected OldCreateOrUpdateAppStep createStep() {
         return new CreateAppStepMock();
     }
 
-    private class CreateAppStepMock extends CreateOrUpdateAppStep {
+    private class CreateAppStepMock extends OldCreateOrUpdateAppStep {
         @Override
         protected ApplicationServicesUpdateCallback getApplicationServicesUpdateCallback(ProcessContext context) {
             return callback;
