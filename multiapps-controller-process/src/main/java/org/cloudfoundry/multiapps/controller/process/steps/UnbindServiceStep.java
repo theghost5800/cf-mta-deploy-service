@@ -6,7 +6,7 @@ import javax.inject.Named;
 
 import org.cloudfoundry.client.lib.CloudControllerClient;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.CloudApplicationExtended;
-import org.cloudfoundry.multiapps.controller.core.model.ServiceBindingActionsToExecute;
+import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -16,24 +16,22 @@ import org.springframework.context.annotation.Scope;
 public class UnbindServiceStep extends SyncFlowableStep {
 
     @Override
-    protected StepPhase executeStep(ProcessContext context) throws Exception {
+    protected StepPhase executeStep(ProcessContext context) {
         CloudApplicationExtended app = context.getVariable(Variables.APP_TO_PROCESS);
-        ServiceBindingActionsToExecute serviceBindingActionsToExecute = context.getVariable(Variables.SERVICE_BINDING_ACTIONS_TO_EXECUTE);
-        getStepLogger().info(MessageFormat.format("Unbinding app \"{0}\" from service \"{1}\"", app.getName(),
-                                                  serviceBindingActionsToExecute.getName()));
+        String service = context.getVariable(Variables.SERVICE_TO_UNBIND_BIND);
+        getStepLogger().info(Messages.UNBINDING_SERVICE_FROM_APP, service, app.getName());
 
         CloudControllerClient client = context.getControllerClient();
-        client.unbindServiceInstance(app.getName(), serviceBindingActionsToExecute.getName());
+        client.unbindServiceInstance(app.getName(), service);
 
         return StepPhase.DONE;
     }
 
     @Override
     protected String getStepErrorMessage(ProcessContext context) {
-        return MessageFormat.format("Error while unbinding app \"{0}\" from service \"{1}\"", context.getVariable(Variables.APP_TO_PROCESS)
-                                                                                                     .getName(),
-                                    context.getVariable(Variables.SERVICE_BINDING_ACTIONS_TO_EXECUTE)
-                                           .getName());
+        return MessageFormat.format(Messages.ERROR_WHILE_UNBINDING_SERVICE_FROM_APPLICATION,
+                                    context.getVariable(Variables.SERVICE_TO_UNBIND_BIND), context.getVariable(Variables.APP_TO_PROCESS)
+                                                                                                  .getName());
     }
 
 }

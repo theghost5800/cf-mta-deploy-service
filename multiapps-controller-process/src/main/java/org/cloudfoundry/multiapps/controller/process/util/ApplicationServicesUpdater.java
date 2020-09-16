@@ -42,7 +42,7 @@ public class ApplicationServicesUpdater extends ControllerClientFacade {
         return getUpdatedServiceNames(addServices, deleteServices, rebindServices);
     }
 
-    public List<String> calculateServicesToAdd(Set<String> services, CloudApplication application) {
+    private List<String> calculateServicesToAdd(Set<String> services, CloudApplication application) {
         return services.stream()
                        .filter(serviceName -> !application.getServices()
                                                           .contains(serviceName))
@@ -56,8 +56,8 @@ public class ApplicationServicesUpdater extends ControllerClientFacade {
                           .collect(Collectors.toList());
     }
 
-    public List<String> calculateServicesToRebind(Map<String, Map<String, Object>> serviceNamesWithBindingParameters,
-                                                  CloudApplication application) {
+    private List<String> calculateServicesToRebind(Map<String, Map<String, Object>> serviceNamesWithBindingParameters,
+                                                   CloudApplication application) {
         List<String> servicesToRebind = new ArrayList<>();
         for (String serviceName : serviceNamesWithBindingParameters.keySet()) {
             if (!application.getServices()

@@ -140,6 +140,10 @@ public class Messages {
     public static final String ERROR_DELETING_OPERATION_WITH_ID = "Error deleting operation with ID \"{0}\"";
     public static final String ERROR_DELETING_FLOWABLE_PROCESS_WITH_ID = "Error deleting Flowable process with ID \"{0}\"";
     public static final String ERROR_MISSING_DEFAULT_DOMAIN = "Missing default domain in current org";
+    public static final String ERROR_WHILE_DETERMINE_BIND_UNBIND_OEPRATIONS_OF_APPLICATION_TO_SERVICE = "Error while determine bind/unbind operations of application \"{0}\" to service \"{1}\"";
+    public static final String ERROR_WHILE_UNBINDING_SERVICE_FROM_APPLICATION = "Error while unbinding service \"{0}\" from application \"{1}\"";
+    public static final String ERROR_WHILE_BINDING_APPLICATION_TO_SERVICE = "Error while binding application \"{0}\" to service \"{1}\"";
+    public static final String ERROR_WHILE_DETERMINE_VCAP_SERVICES_PROPERTIES_CHANGED_FOR_APPLICATION = "Error while determine vcap services properties changed for application \"{0}\"";
 
     // WARN log messages
     public static final String CANNOT_RETRIEVE_SERVICE_INSTANCE_PARAMETERS = "Cannot retrieve service instance parameters of service \"{0}\"";
@@ -536,6 +540,8 @@ public class Messages {
     public static final String VERIFYING_APPLICATION_0_EXISTS = "Verifying application: \"{0}\" exists";
     public static final String TIME_STATISTICS_FOR_PROCESS_0_OPERATION_1_DURATION_2_DELAY_3 = "Time statistics for process \"{0}\" (part of operation \"{1}\"): duration \"{2}\" ms; delay between steps \"{3}\" ms";
     public static final String TIME_STATISTICS_FOR_OPERATION_0_DURATION_1_DELAY_2 = "Time statistics for operation \"{0}\": duration \"{1}\" ms; delay between steps \"{2}\" ms";
+    public static final String DETERMINE_BIND_UNBIND_OPERATIONS_APPLICATION_0_SERVICE_1 = "Determine bind/unbind operations of application \"{0}\" to service \"{1}\"";
+    public static final String DETERMINE_VCAP_SERVICES_PROPERTIES_CHANGED_FOR_APPLICATION = "Determine vcap services properties changed for application \"{0}\"";
 
     protected Messages() {
     }

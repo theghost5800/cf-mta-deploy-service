@@ -8,20 +8,26 @@
     <startEvent id="startEvent" name="Start" flowable:formFieldValidation="true"></startEvent>
     <serviceTask id="unbindServiceTask" name="Unbind Service" flowable:async="true" flowable:delegateExpression="${unbindServiceStep}"></serviceTask>
     <serviceTask id="bindServiceTask" name="Bind Service" flowable:async="true" flowable:delegateExpression="${bindServiceStep}"></serviceTask>
-    <endEvent id="endEvent" name="End"></endEvent>
+    <endEvent id="endEvent" name="End">
+      <extensionElements>
+        <flowable:executionListener event="end" delegateExpression="${bindUnbindServiceEndListener}"></flowable:executionListener>
+      </extensionElements>
+    </endEvent>
     <exclusiveGateway id="sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1" name="Should Unbind Service" default="sid-1BEC5B42-CB23-4AF9-B25D-AD7B203B2EDE"></exclusiveGateway>
-    <sequenceFlow id="sid-2F192239-9810-4794-8AD5-82FDE7513CCD" sourceRef="startEvent" targetRef="sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1"></sequenceFlow>
     <exclusiveGateway id="sid-3DD45EF2-BB87-406C-98BC-507B59E921D8" name="Should Bind Service" default="sid-A9370EC3-E49E-49E8-B87F-66DC1EC8F291"></exclusiveGateway>
     <sequenceFlow id="sid-1BEC5B42-CB23-4AF9-B25D-AD7B203B2EDE" sourceRef="sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1" targetRef="sid-3DD45EF2-BB87-406C-98BC-507B59E921D8"></sequenceFlow>
     <sequenceFlow id="sid-A9370EC3-E49E-49E8-B87F-66DC1EC8F291" sourceRef="sid-3DD45EF2-BB87-406C-98BC-507B59E921D8" targetRef="endEvent"></sequenceFlow>
     <sequenceFlow id="sid-210F0705-B889-48D4-AE02-A0F3CB787B32" sourceRef="unbindServiceTask" targetRef="sid-3DD45EF2-BB87-406C-98BC-507B59E921D8"></sequenceFlow>
     <sequenceFlow id="sid-685D0581-A7E1-4A2B-A8F4-1C904A1AF481" sourceRef="bindServiceTask" targetRef="endEvent"></sequenceFlow>
-    <sequenceFlow id="sid-8FD6B60A-3F5B-4339-B958-7F983A3C6E64" sourceRef="sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1" targetRef="unbindServiceTask">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${serviceBindingActionsToExecute.shouldUnbind()}]]></conditionExpression>
-    </sequenceFlow>
+    <serviceTask id="determineServiceBindUnbindTask" name="Determine Service Bind Unbind" flowable:async="true" flowable:delegateExpression="${determineServiceBindUnbindStep}"></serviceTask>
     <sequenceFlow id="sid-297C30EF-2F6E-42A7-AE45-F3C6C975DF88" sourceRef="sid-3DD45EF2-BB87-406C-98BC-507B59E921D8" targetRef="bindServiceTask">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${serviceBindingActionsToExecute.shouldBind()}]]></conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${shouldBindService}]]></conditionExpression>
     </sequenceFlow>
+    <sequenceFlow id="sid-8FD6B60A-3F5B-4339-B958-7F983A3C6E64" sourceRef="sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1" targetRef="unbindServiceTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${shouldUnbindService}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-8B7746EB-0040-4DEE-973F-FFC97F740D61" sourceRef="determineServiceBindUnbindTask" targetRef="sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1"></sequenceFlow>
+    <sequenceFlow id="sid-2F192239-9810-4794-8AD5-82FDE7513CCD" sourceRef="startEvent" targetRef="determineServiceBindUnbindTask"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_bindUnbindServiceSubProcess">
     <bpmndi:BPMNPlane bpmnElement="bindUnbindServiceSubProcess" id="BPMNPlane_bindUnbindServiceSubProcess">
@@ -29,51 +35,59 @@
         <omgdc:Bounds height="30.0" width="30.0" x="100.0" y="191.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="unbindServiceTask" id="BPMNShape_unbindServiceTask">
-        <omgdc:Bounds height="69.0" width="109.0" x="315.0" y="60.0"></omgdc:Bounds>
+        <omgdc:Bounds height="69.0" width="109.0" x="465.0" y="60.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="bindServiceTask" id="BPMNShape_bindServiceTask">
-        <omgdc:Bounds height="69.0" width="109.0" x="660.0" y="60.0"></omgdc:Bounds>
+        <omgdc:Bounds height="69.0" width="109.0" x="810.0" y="60.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endEvent" id="BPMNShape_endEvent">
         <omgdc:Bounds height="28.0" width="28.0" x="1048.5" y="192.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1" id="BPMNShape_sid-AB2AFF59-667E-4260-BCB5-D958FBF901A1">
-        <omgdc:Bounds height="40.0" width="40.0" x="240.0" y="186.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="390.0" y="186.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="sid-3DD45EF2-BB87-406C-98BC-507B59E921D8" id="BPMNShape_sid-3DD45EF2-BB87-406C-98BC-507B59E921D8">
-        <omgdc:Bounds height="40.0" width="40.0" x="525.0" y="186.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="660.0" y="186.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="determineServiceBindUnbindTask" id="BPMNShape_determineServiceBindUnbindTask">
+        <omgdc:Bounds height="69.0" width="109.0" x="210.0" y="171.5"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="sid-8FD6B60A-3F5B-4339-B958-7F983A3C6E64" id="BPMNEdge_sid-8FD6B60A-3F5B-4339-B958-7F983A3C6E64">
-        <omgdi:waypoint x="260.5" y="186.5"></omgdi:waypoint>
-        <omgdi:waypoint x="260.5" y="94.5"></omgdi:waypoint>
-        <omgdi:waypoint x="315.0" y="94.5"></omgdi:waypoint>
+        <omgdi:waypoint x="410.5" y="186.5"></omgdi:waypoint>
+        <omgdi:waypoint x="410.5" y="94.5"></omgdi:waypoint>
+        <omgdi:waypoint x="464.99999999998954" y="94.5"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-1BEC5B42-CB23-4AF9-B25D-AD7B203B2EDE" id="BPMNEdge_sid-1BEC5B42-CB23-4AF9-B25D-AD7B203B2EDE">
-        <omgdi:waypoint x="279.4800158394727" y="206.46654929577466"></omgdi:waypoint>
-        <omgdi:waypoint x="525.0350877192977" y="206.035"></omgdi:waypoint>
+        <omgdi:waypoint x="429.48168896319993" y="206.46468401486987"></omgdi:waypoint>
+        <omgdi:waypoint x="660.0370370370365" y="206.03694444444443"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-2F192239-9810-4794-8AD5-82FDE7513CCD" id="BPMNEdge_sid-2F192239-9810-4794-8AD5-82FDE7513CCD">
-        <omgdi:waypoint x="129.94999913076796" y="206.0"></omgdi:waypoint>
-        <omgdi:waypoint x="240.0" y="206.0"></omgdi:waypoint>
+        <omgdi:waypoint x="129.94999801768196" y="206.0"></omgdi:waypoint>
+        <omgdi:waypoint x="209.99999999997755" y="206.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-685D0581-A7E1-4A2B-A8F4-1C904A1AF481" id="BPMNEdge_sid-685D0581-A7E1-4A2B-A8F4-1C904A1AF481">
-        <omgdi:waypoint x="768.9499999999999" y="94.5"></omgdi:waypoint>
+        <omgdi:waypoint x="918.9499999999463" y="94.5"></omgdi:waypoint>
         <omgdi:waypoint x="1062.5" y="94.5"></omgdi:waypoint>
         <omgdi:waypoint x="1062.5" y="192.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-8B7746EB-0040-4DEE-973F-FFC97F740D61" id="BPMNEdge_sid-8B7746EB-0040-4DEE-973F-FFC97F740D61">
+        <omgdi:waypoint x="318.9499999999777" y="206.0"></omgdi:waypoint>
+        <omgdi:waypoint x="390.0" y="206.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-297C30EF-2F6E-42A7-AE45-F3C6C975DF88" id="BPMNEdge_sid-297C30EF-2F6E-42A7-AE45-F3C6C975DF88">
-        <omgdi:waypoint x="545.5" y="186.5"></omgdi:waypoint>
-        <omgdi:waypoint x="545.5" y="94.5"></omgdi:waypoint>
-        <omgdi:waypoint x="659.999999999947" y="94.5"></omgdi:waypoint>
+        <omgdi:waypoint x="680.5" y="186.5"></omgdi:waypoint>
+        <omgdi:waypoint x="680.5" y="94.5"></omgdi:waypoint>
+        <omgdi:waypoint x="809.9999999999575" y="94.5"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-A9370EC3-E49E-49E8-B87F-66DC1EC8F291" id="BPMNEdge_sid-A9370EC3-E49E-49E8-B87F-66DC1EC8F291">
-        <omgdi:waypoint x="564.466506968641" y="206.4816069699903"></omgdi:waypoint>
-        <omgdi:waypoint x="1048.5000027127428" y="206.01349133608653"></omgdi:waypoint>
+        <omgdi:waypoint x="699.4723466980921" y="206.4750982961992"></omgdi:waypoint>
+        <omgdi:waypoint x="1048.5000085411434" y="206.01825930475724"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-210F0705-B889-48D4-AE02-A0F3CB787B32" id="BPMNEdge_sid-210F0705-B889-48D4-AE02-A0F3CB787B32">
-        <omgdi:waypoint x="423.9499999999606" y="94.5"></omgdi:waypoint>
-        <omgdi:waypoint x="494.5" y="94.5"></omgdi:waypoint>
-        <omgdi:waypoint x="538.7654320987654" y="192.21807526218382"></omgdi:waypoint>
+        <omgdi:waypoint x="573.9499999999982" y="94.5"></omgdi:waypoint>
+        <omgdi:waypoint x="602.0" y="94.5"></omgdi:waypoint>
+        <omgdi:waypoint x="602.0" y="206.0"></omgdi:waypoint>
+        <omgdi:waypoint x="660.0" y="206.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

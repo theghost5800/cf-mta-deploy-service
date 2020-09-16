@@ -24,7 +24,6 @@ import org.cloudfoundry.multiapps.controller.core.model.ConfigurationSubscriptio
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.ErrorType;
 import org.cloudfoundry.multiapps.controller.core.model.Phase;
-import org.cloudfoundry.multiapps.controller.core.model.ServiceBindingActionsToExecute;
 import org.cloudfoundry.multiapps.controller.core.model.ServiceOperation;
 import org.cloudfoundry.multiapps.controller.core.model.SubprocessPhase;
 import org.cloudfoundry.multiapps.controller.persistence.model.FileEntry;
@@ -542,11 +541,25 @@ public interface Variables {
                                                                       .name("missingDefaultDomain")
                                                                       .defaultValue(false)
                                                                       .build();
-    Variable<List<ServiceBindingActionsToExecute>> SERVICES_BINDING_ACTIONS_TO_EXECUTE = ImmutableSimpleVariable.<List<ServiceBindingActionsToExecute>> builder()
-                                                                                                                .name("servicesBindingActionsToExecute")
-                                                                                                                .build();
-    Variable<ServiceBindingActionsToExecute> SERVICE_BINDING_ACTIONS_TO_EXECUTE = ImmutableSimpleVariable.<ServiceBindingActionsToExecute> builder()
-                                                                                                         .name("serviceBindingActionsToExecute")
-                                                                                                         .build();
+    Variable<List<String>> SERVICES_TO_UNBIND_BIND = ImmutableSimpleVariable.<List<String>> builder()
+                                                                            .name("servicesToUnbindBind")
+                                                                            .defaultValue(Collections.emptyList())
+                                                                            .build();
+    Variable<String> SERVICE_TO_UNBIND_BIND = ImmutableSimpleVariable.<String> builder()
+                                                                     .name("serviceToUnbindBind")
+                                                                     .build();
+    Variable<Boolean> SHOULD_UNBIND_SERVICE = ImmutableSimpleVariable.<Boolean> builder()
+                                                                     .name("shouldUnbindService")
+                                                                     .defaultValue(false)
+                                                                     .build();
+    Variable<Boolean> SHOULD_BIND_SERVICE = ImmutableSimpleVariable.<Boolean> builder()
+                                                                   .name("shouldBindService")
+                                                                   .defaultValue(false)
+                                                                   .build();
+    Variable<Map<String, Object>> SERVICE_BINDING_PARAMETERS = ImmutableJsonBinaryVariable.<Map<String, Object>> builder()
+                                                                                          .name("serviceBindingParameters")
+                                                                                          .type(new TypeReference<Map<String, Object>>() {
+                                                                                          })
+                                                                                          .build();
 
 }
