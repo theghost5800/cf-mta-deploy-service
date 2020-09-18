@@ -36,9 +36,7 @@ public class DetermineServiceBindUnbindStep extends SyncFlowableStep {
         CloudControllerClient client = context.getControllerClient();
         CloudApplication existingApp = client.getApplication(app.getName());
 
-        ServiceBindingParametersGetter serviceBindingParametersGetter = new ServiceBindingParametersGetter(context,
-                                                                                                           fileService,
-                                                                                                           configuration.getMaxManifestSize());
+        ServiceBindingParametersGetter serviceBindingParametersGetter = getServiceBindingParametersGetter(context);
         Map<String, Object> bindingParameters = serviceBindingParametersGetter.getServiceBindingParametersFromMta(app, service);
         if (!doesServiceBindingExist(service, existingApp)) {
             context.setVariable(Variables.SHOULD_UNBIND_SERVICE, false);
@@ -68,6 +66,10 @@ public class DetermineServiceBindUnbindStep extends SyncFlowableStep {
     private boolean shouldKeepExistingServiceBindings(CloudApplicationExtended app) {
         AttributeUpdateStrategy appAttributesUpdateBehavior = app.getAttributesUpdateStrategy();
         return appAttributesUpdateBehavior.shouldKeepExistingServiceBindings();
+    }
+
+    protected ServiceBindingParametersGetter getServiceBindingParametersGetter(ProcessContext context) {
+        return new ServiceBindingParametersGetter(context, fileService, configuration.getMaxManifestSize());
     }
 
     private boolean doesServiceBindingExist(String service, CloudApplication existingApp) {

@@ -24,6 +24,7 @@ import org.cloudfoundry.multiapps.controller.client.lib.domain.CloudServiceInsta
 import org.cloudfoundry.multiapps.controller.client.lib.domain.ImmutableCloudApplicationExtended;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.ImmutableCloudServiceInstanceExtended;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
+import org.flowable.engine.ProcessEngine;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,11 +32,17 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 @RunWith(Parameterized.class)
 public class CreateOrUpdateAppStepTest extends CreateOrUpdateAppStepBaseTest {
+
+    @Mock
+    private ProcessEngine processEngine;
 
     private final String expectedExceptionMessage;
     private final ApplicationServicesUpdateCallback callback;
@@ -218,11 +225,21 @@ public class CreateOrUpdateAppStepTest extends CreateOrUpdateAppStepBaseTest {
     }
 
     @Override
-    protected OldCreateOrUpdateAppStep createStep() {
-        return new CreateAppStepMock();
+    protected CreateOrUpdateAppStep createStep() {
+        return new CreateAppStepMock(processEngine);
     }
 
-    private class CreateAppStepMock extends OldCreateOrUpdateAppStep {
+    private class CreateAppStepMock extends CreateOrUpdateAppStep {
+
+        public CreateAppStepMock(ProcessEngine processEngine) {
+            super(processEngine);
+        }
+
+        @Override
+        protected JsonNode getBindUnbindServicesCallActivity(ProcessContext context) {
+            return null;
+        }
+
         @Override
         protected ApplicationServicesUpdateCallback getApplicationServicesUpdateCallback(ProcessContext context) {
             return callback;

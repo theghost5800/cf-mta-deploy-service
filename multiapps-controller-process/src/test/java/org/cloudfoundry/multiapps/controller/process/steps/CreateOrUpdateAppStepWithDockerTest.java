@@ -16,12 +16,19 @@ import org.cloudfoundry.multiapps.common.test.GenericArgumentMatcher;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.CloudApplicationExtended;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.ImmutableCloudApplicationExtended;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
-import org.junit.Test;
+import org.flowable.engine.ProcessEngine;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class CreateOrUpdateAppStepWithDockerTest extends CreateOrUpdateAppStepBaseTest {
 
     private static final DockerInfo DOCKER_INFO = createDockerInfo();
+
+    @Mock
+    private ProcessEngine processEngine;
 
     private static DockerInfo createDockerInfo() {
         String image = "cloudfoundry/test-app";
@@ -106,8 +113,15 @@ public class CreateOrUpdateAppStepWithDockerTest extends CreateOrUpdateAppStepBa
     }
 
     @Override
-    protected OldCreateOrUpdateAppStep createStep() {
-        return new OldCreateOrUpdateAppStep();
+    protected CreateOrUpdateAppStep createStep() {
+        return new CreateOrUpdateAppStep(processEngine) {
+
+            @Override
+            protected JsonNode getBindUnbindServicesCallActivity(ProcessContext context) {
+                return null;
+            }
+
+        };
     }
 
 }

@@ -46,11 +46,11 @@ public class BindServiceStep extends SyncFlowableStep {
                                     context.getVariable(Variables.SERVICE_TO_UNBIND_BIND));
     }
 
-    private class DefaultApplicationServicesUpdateCallback implements ApplicationServicesUpdateCallback {
+    public static class DefaultApplicationServicesUpdateCallback implements ApplicationServicesUpdateCallback {
 
         private final ProcessContext context;
 
-        private DefaultApplicationServicesUpdateCallback(ProcessContext context) {
+        public DefaultApplicationServicesUpdateCallback(ProcessContext context) {
             this.context = context;
         }
 
@@ -60,7 +60,8 @@ public class BindServiceStep extends SyncFlowableStep {
             CloudServiceInstanceExtended serviceToBind = findServiceCloudModel(servicesToBind, serviceName);
 
             if (serviceToBind != null && serviceToBind.isOptional()) {
-                getStepLogger().warn(e, Messages.COULD_NOT_BIND_APP_TO_OPTIONAL_SERVICE, applicationName, serviceName);
+                context.getStepLogger()
+                       .warn(e, Messages.COULD_NOT_BIND_APP_TO_OPTIONAL_SERVICE, applicationName, serviceName);
                 return;
             }
             throw new SLException(e, Messages.COULD_NOT_BIND_APP_TO_SERVICE, applicationName, serviceName, e.getMessage());

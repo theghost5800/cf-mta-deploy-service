@@ -18,8 +18,7 @@ public class BindUnbindServiceEndListener implements ExecutionListener {
 
     @Override
     public void notify(DelegateExecution execution) {
-        RuntimeService runtimeService = Context.getProcessEngineConfiguration()
-                                               .getRuntimeService();
+        RuntimeService runtimeService = getRuntimeService();
 
         CloudApplicationExtended app = VariableHandling.get(execution, Variables.APP_TO_PROCESS);
         String service = VariableHandling.get(execution, Variables.SERVICE_TO_UNBIND_BIND);
@@ -30,6 +29,11 @@ public class BindUnbindServiceEndListener implements ExecutionListener {
         String exportedVariableName = buildExportedVariableName(app.getName(), service);
 
         runtimeService.setVariable(superExecutionId, exportedVariableName, shouldUnbindService || shouldBindService);
+    }
+
+    protected RuntimeService getRuntimeService() {
+        return Context.getProcessEngineConfiguration()
+                      .getRuntimeService();
     }
 
     public static String buildExportedVariableName(String appName, String service) {

@@ -10,7 +10,7 @@ import org.cloudfoundry.multiapps.controller.client.lib.domain.CloudApplicationE
 import org.cloudfoundry.multiapps.controller.client.lib.domain.CloudServiceInstanceExtended;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.ImmutableCloudServiceInstanceExtended;
 
-public abstract class CreateOrUpdateAppStepBaseTest extends SyncFlowableStepTest<OldCreateOrUpdateAppStep> {
+public abstract class CreateOrUpdateAppStepBaseTest extends SyncFlowableStepTest<CreateOrUpdateAppStep> {
 
     protected StepInput stepInput;
     protected CloudApplicationExtended application;
