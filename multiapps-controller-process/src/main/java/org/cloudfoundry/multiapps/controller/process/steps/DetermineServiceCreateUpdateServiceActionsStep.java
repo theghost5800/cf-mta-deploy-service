@@ -197,8 +197,7 @@ public class DetermineServiceCreateUpdateServiceActionsStep extends SyncFlowable
         return service;
     }
 
-    private CloudServiceInstanceExtended setServiceParameters(ProcessContext context, CloudServiceInstanceExtended service,
-                                                              String fileName)
+    private CloudServiceInstanceExtended setServiceParameters(ProcessContext context, CloudServiceInstanceExtended service, String fileName)
         throws FileStorageException {
         String appArchiveId = context.getRequiredVariable(Variables.APP_ARCHIVE_ID);
         String spaceGuid = context.getVariable(Variables.SPACE_GUID);
@@ -263,8 +262,7 @@ public class DetermineServiceCreateUpdateServiceActionsStep extends SyncFlowable
     private boolean shouldUpdateCredentials(CloudServiceInstanceExtended service, CloudServiceInstance existingService,
                                             CloudControllerClient client) {
         try {
-            Map<String, Object> serviceParameters = client.getServiceInstanceParameters(existingService.getMetadata()
-                                                                                                       .getGuid());
+            Map<String, Object> serviceParameters = getServiceParameters(existingService, client);
             getStepLogger().debug("Existing service parameters: " + SecureSerialization.toJson(serviceParameters));
             return !Objects.equals(service.getCredentials(), serviceParameters);
         } catch (CloudOperationException e) {
@@ -275,5 +273,13 @@ public class DetermineServiceCreateUpdateServiceActionsStep extends SyncFlowable
             }
             throw e;
         }
+    }
+
+    private Map<String, Object> getServiceParameters(CloudServiceInstance existingService, CloudControllerClient client) {
+        if (existingService.isUserProvided()) {
+            return existingService.getCredentials();
+        }
+        return client.getServiceInstanceParameters(existingService.getMetadata()
+                                                                  .getGuid());
     }
 }

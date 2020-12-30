@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import org.cloudfoundry.client.v3.serviceInstances.ServiceInstanceType;
 import org.cloudfoundry.multiapps.common.SLException;
 import org.cloudfoundry.multiapps.common.test.TestUtil;
 import org.cloudfoundry.multiapps.common.util.JsonUtil;
@@ -29,7 +30,6 @@ import com.sap.cloudfoundry.client.facade.domain.CloudMetadata;
 import com.sap.cloudfoundry.client.facade.domain.CloudServiceInstance;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableCloudMetadata;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableCloudServiceInstance;
-import com.sap.cloudfoundry.client.facade.domain.ServiceInstanceType;
 
 class CreateServiceStepTest extends SyncFlowableStepTest<CreateServiceStep> {
 
@@ -160,7 +160,7 @@ class CreateServiceStepTest extends SyncFlowableStepTest<CreateServiceStep> {
                                             .plan(service.plan)
                                             .label(service.label)
                                             .metadata(serviceMetadata)
-                                            .type(ServiceInstanceType.valueOfWithDefault(service.type))
+                                            .type(ServiceInstanceType.from(service.type))
                                             .build();
     }
 
