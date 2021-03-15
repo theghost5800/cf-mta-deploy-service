@@ -52,7 +52,8 @@ public class OperationInFinalStateHandler {
     private final SafeExecutor safeExecutor = new SafeExecutor();
 
     public void handle(DelegateExecution execution, ProcessType processType, Operation.State state) {
-        LoggingUtil.logWithCorrelationId(VariableHandling.get(execution, Variables.CORRELATION_ID), () -> handleInternal(execution, processType, state));
+        LoggingUtil.logWithCorrelationId(VariableHandling.get(execution, Variables.CORRELATION_ID),
+                                         () -> handleInternal(execution, processType, state));
     }
 
     private void handleInternal(DelegateExecution execution, ProcessType processType, Operation.State state) {
@@ -81,9 +82,12 @@ public class OperationInFinalStateHandler {
         String organizationName = VariableHandling.get(execution, Variables.ORGANIZATION_NAME);
         String spaceName = VariableHandling.get(execution, Variables.SPACE_NAME);
         String spaceGuid = VariableHandling.get(execution, Variables.SPACE_GUID);
+        String correlationId = VariableHandling.get(execution, Variables.CORRELATION_ID);
 
-        clientProvider.releaseClient(user, organizationName, spaceName);
-        clientProvider.releaseClient(user, spaceGuid);
+        clientProvider.releaseClient(user, organizationName, spaceName, null);
+        clientProvider.releaseClient(user, spaceGuid, null);
+        clientProvider.releaseClient(user, organizationName, spaceName, correlationId);
+        clientProvider.releaseClient(user, spaceGuid, correlationId);
     }
 
     protected void setOperationState(String processInstanceId, Operation.State state) {
@@ -108,7 +112,8 @@ public class OperationInFinalStateHandler {
 
     private boolean isOperationAlreadyFinal(Operation operation) {
         return operation.getState()
-                        .isFinal() && !operation.hasAcquiredLock() && operation.getEndedAt() != null;
+                        .isFinal()
+            && !operation.hasAcquiredLock() && operation.getEndedAt() != null;
     }
 
     private HistoricOperationEvent.EventType toEventType(State state) {
@@ -121,17 +126,19 @@ public class OperationInFinalStateHandler {
         processTimes.forEach((processId, processTime) -> logProcessTime(correlationId, processId, processTime));
 
         ProcessTime overallProcessTime = operationTimeAggregator.computeOverallProcessTime(correlationId, processTimes);
-        
+
         DynatraceProcessDuration dynatraceProcessDuration = ImmutableDynatraceProcessDuration.builder()
                                                                                              .processId(correlationId)
-                                                                                             .mtaId(VariableHandling.get(execution, Variables.MTA_ID))
-                                                                                             .spaceId(VariableHandling.get(execution, Variables.SPACE_GUID))
+                                                                                             .mtaId(VariableHandling.get(execution,
+                                                                                                                         Variables.MTA_ID))
+                                                                                             .spaceId(VariableHandling.get(execution,
+                                                                                                                           Variables.SPACE_GUID))
                                                                                              .operationState(state)
                                                                                              .processType(processType)
                                                                                              .processDuration(overallProcessTime.getProcessDuration())
                                                                                              .build();
-       dynatracePublisher.publishProcessDuration(dynatraceProcessDuration, LOGGER);
-        
+        dynatracePublisher.publishProcessDuration(dynatraceProcessDuration, LOGGER);
+
         LOGGER.info(format(Messages.TIME_STATISTICS_FOR_OPERATION_0_DURATION_1_DELAY_2, correlationId,
                            overallProcessTime.getProcessDuration(), overallProcessTime.getDelayBetweenSteps()));
     }
@@ -140,5 +147,5 @@ public class OperationInFinalStateHandler {
         LOGGER.debug(format(Messages.TIME_STATISTICS_FOR_PROCESS_0_OPERATION_1_DURATION_2_DELAY_3, processId, correlationId,
                             processTime.getProcessDuration(), processTime.getDelayBetweenSteps()));
     }
-    
+
 }

@@ -296,7 +296,7 @@ class OperationsApiServiceImplTest {
         Mockito.when(securityContextMock.getAuthentication())
                .thenReturn(auth);
         CloudControllerClient mockedClient = mockClient();
-        Mockito.when(clientProvider.getControllerClient(Mockito.any(), Mockito.any()))
+        Mockito.when(clientProvider.getControllerClient(Mockito.any(), Mockito.any(), Mockito.any()))
                .thenReturn(mockedClient);
     }
 
@@ -368,7 +368,8 @@ class OperationsApiServiceImplTest {
                .when(operationQuery)
                .withStateAnyOf(Mockito.anyList());
         Mockito.doAnswer(invocation -> operations.stream()
-                                                 .filter(operation -> operationStatesToFilter == null || operationStatesToFilter.contains(operation.getState()))
+                                                 .filter(operation -> operationStatesToFilter == null
+                                                     || operationStatesToFilter.contains(operation.getState()))
                                                  .collect(Collectors.toList()))
                .when(operationQuery)
                .list();
