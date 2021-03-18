@@ -84,6 +84,11 @@ public class OperationInFinalStateHandler {
         String spaceGuid = VariableHandling.get(execution, Variables.SPACE_GUID);
         String correlationId = VariableHandling.get(execution, Variables.CORRELATION_ID);
 
+        if (correlationId == null) {
+            // TODO remove logging
+            LOGGER.info("correlationId was null in final state handler");
+        }
+
         clientProvider.releaseClient(user, organizationName, spaceName, null);
         clientProvider.releaseClient(user, spaceGuid, null);
         clientProvider.releaseClient(user, organizationName, spaceName, correlationId);

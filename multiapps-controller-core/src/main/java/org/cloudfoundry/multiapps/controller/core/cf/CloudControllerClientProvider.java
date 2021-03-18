@@ -25,15 +25,23 @@ public class CloudControllerClientProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudControllerClientProvider.class);
 
-    @Inject
     private ClientFactory clientFactory;
-
-    @Inject
     private TokenService tokenService;
 
     // Cached clients. These are stored in memory-sensitive cache, i.e. no OutOfMemory error would
     // occur before GC tries to release the not-used clients.
-    private final Map<String, CloudControllerClient> clients = new ConcurrentReferenceHashMap<>();
+    private final Map<String, CloudControllerClient> clients;
+
+    @Inject
+    public CloudControllerClientProvider(ClientFactory clientFactory, TokenService tokenService) {
+        this.clientFactory = clientFactory;
+        this.tokenService = tokenService;
+        this.clients = buildClientsCache();
+    }
+
+    protected Map<String, CloudControllerClient> buildClientsCache() {
+        return new ConcurrentReferenceHashMap<>();
+    }
 
     /**
      * Returns a client for the specified user name, organization, space and process id by either getting it from the clients cache or
@@ -123,6 +131,7 @@ public class CloudControllerClientProvider {
     private CloudControllerClient getClientFromCache(String userName, String org, String space, String correlationId) {
         String key = getKey(userName, org, space, correlationId);
         return clients.computeIfAbsent(key, k -> {
+            // TODO remove logging
             LOGGER.info(MessageFormat.format("Clients cache content: {0}", clients));
             return clientFactory.createClient(getValidToken(userName), org, space, correlationId);
         });
@@ -131,6 +140,7 @@ public class CloudControllerClientProvider {
     private CloudControllerClient getClientFromCache(String userName, String spaceId, String correlationId) {
         String key = getKey(userName, spaceId, correlationId);
         return clients.computeIfAbsent(key, k -> {
+            // TODO remove logging
             LOGGER.info(MessageFormat.format("Clients cache content: {0}", clients));
             return clientFactory.createClient(getValidToken(userName), spaceId, correlationId);
         });

@@ -29,6 +29,11 @@ public class ClientReleaser {
         String spaceGuid = HistoryUtil.getVariableValue(historyService, processInstanceId, Variables.SPACE_GUID.getName());
         String correlationId = HistoryUtil.getVariableValue(historyService, processInstanceId, Variables.CORRELATION_ID.getName());
 
+        if (correlationId == null) {
+            // TODO remove logging
+            LOGGER.info("correlationId was null in client releaser");
+        }
+
         try {
             clientProvider.releaseClient(user, organizationName, spaceName, null);
             clientProvider.releaseClient(user, spaceGuid, null);
