@@ -49,7 +49,7 @@ import com.sap.cloudfoundry.client.facade.domain.Status;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class UploadAppStep extends TimeoutAsyncFlowableStep {
 
-    static final int DEFAULT_APP_UPLOAD_TIMEOUT = (int) TimeUnit.MINUTES.toSeconds(15);
+    static final int DEFAULT_APP_UPLOAD_TIMEOUT = (int) TimeUnit.MINUTES.toSeconds(60);
     private static final Logger LOGGER = LoggerFactory.getLogger(UploadAppStep.class);
     @Inject
     protected ApplicationArchiveReader applicationArchiveReader;
