@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
 import com.sap.cloudfoundry.client.facade.CloudOperationException;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication.State;
 
@@ -56,7 +57,9 @@ public class RestartAppStep extends TimeoutAsyncFlowableStepWithHooks implements
 
     private boolean isStarted(CloudControllerClient client, String appName) {
         try {
-            CloudApplication app = client.getApplication(appName);
+            CloudApplication app = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                  .name(appName)
+                                                                                                  .build());
             return app.getState()
                       .equals(State.STARTED);
         } catch (CloudOperationException e) {

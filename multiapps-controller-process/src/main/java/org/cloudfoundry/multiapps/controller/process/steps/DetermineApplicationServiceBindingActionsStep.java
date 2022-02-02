@@ -16,6 +16,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 
 @Named("determineApplicationServiceBindingActionsStep")
@@ -36,7 +37,10 @@ public class DetermineApplicationServiceBindingActionsStep extends SyncFlowableS
         }
 
         CloudControllerClient client = context.getControllerClient();
-        CloudApplication existingApp = client.getApplication(app.getName());
+        CloudApplication existingApp = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                      .name(app.getName())
+                                                                                                      .isBindingsRequired(true)
+                                                                                                      .build());
 
         ServiceBindingParametersGetter serviceBindingParametersGetter = getServiceBindingParametersGetter(context);
         Map<String, Object> bindingParameters = serviceBindingParametersGetter.getServiceBindingParametersFromMta(app, service);

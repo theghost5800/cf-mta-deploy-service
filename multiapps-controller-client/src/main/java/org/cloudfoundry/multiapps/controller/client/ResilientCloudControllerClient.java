@@ -18,6 +18,7 @@ import com.sap.cloudfoundry.client.facade.ApplicationServicesUpdateCallback;
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
 import com.sap.cloudfoundry.client.facade.CloudControllerClientImpl;
 import com.sap.cloudfoundry.client.facade.UploadStatusCallback;
+import com.sap.cloudfoundry.client.facade.adapters.CloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.ApplicationLog;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudAsyncJob;
@@ -143,6 +144,11 @@ public class ResilientCloudControllerClient implements CloudControllerClient {
     @Override
     public CloudApplication getApplication(UUID appGuid) {
         return executeWithRetry(() -> delegate.getApplication(appGuid));
+    }
+
+    @Override
+    public CloudApplication getApplication(CloudApplicationRequiredEntities requiredEntities) {
+        return executeWithRetry(() -> delegate.getApplication(requiredEntities));
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 
 @Named("updateApplicationMetadataStep")
@@ -29,7 +30,9 @@ public class UpdateApplicationMetadataStep extends SyncFlowableStep {
 
     private void updateApplicationMetadata(ProcessContext context, CloudApplicationExtended app) {
         CloudControllerClient client = context.getControllerClient();
-        CloudApplication existingApp = client.getApplication(app.getName());
+        CloudApplication existingApp = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                      .name(app.getName())
+                                                                                                      .build());
 
         if (isNewApplication(context)) {
             addApplicationMetadata(client, app, existingApp);

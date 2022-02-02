@@ -21,6 +21,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 
 @Named("detectApplicationsToRenameStep")
@@ -79,7 +80,11 @@ public class DetectApplicationsToRenameStep extends SyncFlowableStep {
     private void setAppsToUndeploy(ProcessContext context, List<String> appsToUndeploy) {
         CloudControllerClient client = context.getControllerClient();
         List<CloudApplication> apps = appsToUndeploy.stream()
-                                                    .map(app -> client.getApplication(app, false))
+                                                    .map(app -> client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                                               .name(app)
+                                                                                                                               .isEnvRequired(true)
+                                                                                                                               .isRequired(false)
+                                                                                                                               .build()))
                                                     .filter(Objects::nonNull)
                                                     .collect(Collectors.toList());
         context.setVariable(Variables.APPS_TO_UNDEPLOY, apps);

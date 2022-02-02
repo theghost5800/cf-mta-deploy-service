@@ -18,6 +18,7 @@ import org.cloudfoundry.multiapps.controller.process.Messages;
 import com.sap.cloudfoundry.client.facade.ApplicationServicesUpdateCallback;
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
 import com.sap.cloudfoundry.client.facade.UploadStatusCallback;
+import com.sap.cloudfoundry.client.facade.adapters.CloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.ApplicationLog;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudAsyncJob;
@@ -202,6 +203,13 @@ public class LoggingCloudControllerClient implements CloudControllerClient {
     public CloudApplication getApplication(UUID guid) {
         logger.debug(Messages.GETTING_APPLICATION_0, guid);
         return delegate.getApplication(guid);
+    }
+
+    @Override
+    public CloudApplication getApplication(CloudApplicationRequiredEntities requiredEntities) {
+        logger.debug(Messages.GETTING_APPLICATION_0,
+                     requiredEntities.getName() != null ? requiredEntities.getName() : requiredEntities.getGuid());
+        return delegate.getApplication(requiredEntities);
     }
 
     @Override

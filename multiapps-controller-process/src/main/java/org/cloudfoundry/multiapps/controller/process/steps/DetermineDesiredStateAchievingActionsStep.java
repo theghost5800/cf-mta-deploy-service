@@ -21,6 +21,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudPackage;
 
@@ -36,7 +37,11 @@ public class DetermineDesiredStateAchievingActionsStep extends SyncFlowableStep 
         String appName = context.getVariable(Variables.APP_TO_PROCESS)
                                 .getName();
         CloudControllerClient client = context.getControllerClient();
-        CloudApplication app = client.getApplication(appName);
+        CloudApplication app = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                              .name(appName)
+                                                                                              .isEnvRequired(true)
+                                                                                              .isInstancesRequired(true)
+                                                                                              .build());
         ApplicationStartupState currentState = startupStateCalculator.computeCurrentState(app);
         getStepLogger().debug(Messages.CURRENT_STATE, appName, currentState);
         ApplicationStartupState desiredState = computeDesiredState(context, app);

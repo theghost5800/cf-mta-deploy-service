@@ -35,6 +35,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 
 @Named("createOrUpdateAppStep")
@@ -48,7 +49,15 @@ public class CreateOrUpdateAppStep extends SyncFlowableStep {
         CloudApplicationExtended app = context.getVariable(Variables.APP_TO_PROCESS);
 
         CloudControllerClient client = context.getControllerClient();
-        CloudApplication existingApp = client.getApplication(app.getName(), false);
+        CloudApplication existingApp = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                      .name(app.getName())
+                                                                                                      .isEnvRequired(true)
+                                                                                                      .isStagingRequired(true)
+                                                                                                      .isRoutesRequired(true)
+                                                                                                      .isBindingsRequired(true)
+                                                                                                      .isInstancesRequired(true)
+                                                                                                      .isRequired(false)
+                                                                                                      .build());
         context.setVariable(Variables.EXISTING_APP, existingApp);
 
         StepFlowHandler flowHandler = createStepFlowHandler(context, client, app, existingApp);

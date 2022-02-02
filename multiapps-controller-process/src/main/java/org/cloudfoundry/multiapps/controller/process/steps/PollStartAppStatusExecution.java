@@ -1,10 +1,12 @@
 package org.cloudfoundry.multiapps.controller.process.steps;
 
-import com.sap.cloudfoundry.client.facade.CloudControllerClient;
-import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
-import com.sap.cloudfoundry.client.facade.domain.CloudRouteSummary;
-import com.sap.cloudfoundry.client.facade.domain.InstanceInfo;
-import com.sap.cloudfoundry.client.facade.domain.InstanceState;
+import static java.text.MessageFormat.format;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.cloudfoundry.multiapps.controller.core.cf.clients.RecentLogsRetriever;
 import org.cloudfoundry.multiapps.controller.core.util.UriUtil;
 import org.cloudfoundry.multiapps.controller.persistence.services.ProcessLoggerProvider;
@@ -13,12 +15,13 @@ import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.text.MessageFormat.format;
+import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
+import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
+import com.sap.cloudfoundry.client.facade.domain.CloudRouteSummary;
+import com.sap.cloudfoundry.client.facade.domain.InstanceInfo;
+import com.sap.cloudfoundry.client.facade.domain.InstanceState;
+import com.sap.cloudfoundry.client.facade.domain.InstancesInfo;
 
 public class PollStartAppStatusExecution implements AsyncExecution {
 
@@ -36,22 +39,19 @@ public class PollStartAppStatusExecution implements AsyncExecution {
 
     @Override
     public AsyncExecutionState execute(ProcessContext context) {
-        String appToPoll = getAppToPoll(context).getName();
+        CloudApplication appToPoll = getAppToPoll(context);
         CloudControllerClient client = context.getControllerClient();
 
         context.getStepLogger()
-               .debug(Messages.CHECKING_APP_STATUS, appToPoll);
+               .debug(Messages.CHECKING_APP_STATUS, appToPoll.getName());
 
-        // We're using the app object returned by the controller, because it includes the router port in its URIs, while the app model
-        // we've built doesn't.
-        CloudApplication app = client.getApplication(appToPoll);
-        List<InstanceInfo> appInstances = client.getApplicationInstances(app)
-                                                .getInstances();
-        StartupStatus status = getStartupStatus(context, app, appInstances);
+        InstancesInfo instancesInfo = getInstancesInfo(client, context, appToPoll.getName());
+
+        StartupStatus status = getStartupStatus(context, appToPoll, instancesInfo.getInstances());
         ProcessLoggerProvider processLoggerProvider = context.getStepLogger()
                                                              .getProcessLoggerProvider();
-        StepsUtil.saveAppLogs(context, client, recentLogsRetriever, app, LOGGER, processLoggerProvider);
-        return checkStartupStatus(context, app, status);
+        StepsUtil.saveAppLogs(context, client, recentLogsRetriever, appToPoll, LOGGER, processLoggerProvider);
+        return checkStartupStatus(context, appToPoll, status);
     }
 
     public String getPollingErrorMessage(ProcessContext context) {
@@ -61,6 +61,17 @@ public class PollStartAppStatusExecution implements AsyncExecution {
 
     protected CloudApplication getAppToPoll(ProcessContext context) {
         return context.getVariable(Variables.APP_TO_PROCESS);
+    }
+
+    private InstancesInfo getInstancesInfo(CloudControllerClient client, ProcessContext context, String applicationName) {
+        CloudApplication existingAppToPoll = context.getVariable(Variables.EXISTING_APP_TO_POLL);
+        if (existingAppToPoll == null) {
+            existingAppToPoll = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                               .name(applicationName)
+                                                                                               .build());
+            context.setVariable(Variables.EXISTING_APP_TO_POLL, existingAppToPoll);
+        }
+        return client.getApplicationInstances(existingAppToPoll);
     }
 
     private StartupStatus getStartupStatus(ProcessContext context, CloudApplication app, List<InstanceInfo> appInstances) {

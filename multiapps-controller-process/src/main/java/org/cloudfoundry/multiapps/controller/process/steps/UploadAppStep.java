@@ -41,6 +41,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudPackage;
 import com.sap.cloudfoundry.client.facade.domain.Status;
@@ -76,7 +77,10 @@ public class UploadAppStep extends TimeoutAsyncFlowableStep {
         }
 
         String newApplicationDigest = getNewApplicationDigest(context, moduleFileName);
-        CloudApplication cloudApp = client.getApplication(applicationToProcess.getName());
+        CloudApplication cloudApp = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                   .name(applicationToProcess.getName())
+                                                                                                   .isEnvRequired(true)
+                                                                                                   .build());
 
         boolean contentChanged = detectApplicationFileDigestChanges(cloudApp, newApplicationDigest);
         if (contentChanged) {

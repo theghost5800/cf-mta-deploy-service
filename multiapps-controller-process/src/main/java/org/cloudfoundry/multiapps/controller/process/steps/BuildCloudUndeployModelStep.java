@@ -28,6 +28,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 
 @Named("buildCloudUndeployModelStep")
@@ -193,7 +194,12 @@ public class BuildCloudUndeployModelStep extends SyncFlowableStep {
 
     private List<CloudApplication> computeAppsToUndeploy(List<DeployedMtaApplication> modulesToUndeploy, CloudControllerClient client) {
         return modulesToUndeploy.stream()
-                                .map(appToUndeploy -> client.getApplication(appToUndeploy.getName(), false))
+                                .map(appToUndeploy -> client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                                     .name(appToUndeploy.getName())
+                                                                                                                     .isEnvRequired(true)
+                                                                                                                     .isRoutesRequired(true)
+                                                                                                                     .isRequired(false)
+                                                                                                                     .build()))
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
     }

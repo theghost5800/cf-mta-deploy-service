@@ -52,6 +52,7 @@ import org.springframework.context.annotation.Scope;
 
 import com.sap.cloudfoundry.client.facade.CloudControllerClient;
 import com.sap.cloudfoundry.client.facade.CloudOperationException;
+import com.sap.cloudfoundry.client.facade.adapters.ImmutableCloudApplicationRequiredEntities;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudOrganization;
 import com.sap.cloudfoundry.client.facade.domain.CloudSpace;
@@ -224,7 +225,10 @@ public class UpdateSubscribersStep extends SyncFlowableStep {
                                        .get(0);
 
         CloudApplicationExtended application = applicationCloudModelBuilder.build(module, moduleToDeployHelper);
-        CloudApplication existingApplication = client.getApplication(subscription.getAppName());
+        CloudApplication existingApplication = client.getApplication(ImmutableCloudApplicationRequiredEntities.builder()
+                                                                                                              .name(subscription.getAppName())
+                                                                                                              .isEnvRequired(true)
+                                                                                                              .build());
 
         Map<String, String> updatedEnvironment = application.getEnv();
         Map<String, String> currentEnvironment = new LinkedHashMap<>(existingApplication.getEnv());
