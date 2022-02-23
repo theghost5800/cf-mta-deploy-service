@@ -145,9 +145,9 @@ public class LoggingCloudControllerClient implements CloudControllerClient {
     }
 
     @Override
-    public List<CloudRoute> deleteOrphanedRoutes() {
+    public void deleteOrphanedRoutes() {
         logger.debug(Messages.DELETING_ORPHANED_ROUTES);
-        return delegate.deleteOrphanedRoutes();
+        delegate.deleteOrphanedRoutes();
     }
 
     @Override
@@ -187,23 +187,23 @@ public class LoggingCloudControllerClient implements CloudControllerClient {
         delegate.deleteServiceKey(serviceKey);
     }
 
-    @Override
-    public CloudApplication getApplication(String applicationName) {
-        logger.debug(Messages.GETTING_APPLICATION_0, applicationName);
-        return delegate.getApplication(applicationName);
-    }
-
-    @Override
-    public CloudApplication getApplication(String applicationName, boolean required) {
-        logger.debug(Messages.GETTING_APPLICATION_0, applicationName);
-        return delegate.getApplication(applicationName, required);
-    }
-
-    @Override
-    public CloudApplication getApplication(UUID guid) {
-        logger.debug(Messages.GETTING_APPLICATION_0, guid);
-        return delegate.getApplication(guid);
-    }
+    // @Override
+    // public CloudApplication getApplication(String applicationName) {
+    // logger.debug(Messages.GETTING_APPLICATION_0, applicationName);
+    // return delegate.getApplication(applicationName);
+    // }
+    //
+    // @Override
+    // public CloudApplication getApplication(String applicationName, boolean required) {
+    // logger.debug(Messages.GETTING_APPLICATION_0, applicationName);
+    // return delegate.getApplication(applicationName, required);
+    // }
+    //
+    // @Override
+    // public CloudApplication getApplication(UUID guid) {
+    // logger.debug(Messages.GETTING_APPLICATION_0, guid);
+    // return delegate.getApplication(guid);
+    // }
 
     @Override
     public CloudApplication getApplication(CloudApplicationRequiredEntities requiredEntities) {

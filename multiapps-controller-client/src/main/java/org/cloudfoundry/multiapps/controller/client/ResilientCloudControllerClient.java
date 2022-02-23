@@ -107,8 +107,8 @@ public class ResilientCloudControllerClient implements CloudControllerClient {
     }
 
     @Override
-    public List<CloudRoute> deleteOrphanedRoutes() {
-        return executeWithRetry(delegate::deleteOrphanedRoutes, HttpStatus.NOT_FOUND);
+    public void deleteOrphanedRoutes() {
+        executeWithRetry(delegate::deleteOrphanedRoutes, HttpStatus.NOT_FOUND);
     }
 
     @Override
@@ -131,20 +131,20 @@ public class ResilientCloudControllerClient implements CloudControllerClient {
         return executeWithRetry(() -> delegate.deleteServiceBroker(name));
     }
 
-    @Override
-    public CloudApplication getApplication(String applicationName) {
-        return executeWithRetry(() -> delegate.getApplication(applicationName));
-    }
-
-    @Override
-    public CloudApplication getApplication(String applicationName, boolean required) {
-        return executeWithRetry(() -> delegate.getApplication(applicationName, required));
-    }
-
-    @Override
-    public CloudApplication getApplication(UUID appGuid) {
-        return executeWithRetry(() -> delegate.getApplication(appGuid));
-    }
+    // @Override
+    // public CloudApplication getApplication(String applicationName) {
+    // return executeWithRetry(() -> delegate.getApplication(applicationName));
+    // }
+    //
+    // @Override
+    // public CloudApplication getApplication(String applicationName, boolean required) {
+    // return executeWithRetry(() -> delegate.getApplication(applicationName, required));
+    // }
+    //
+    // @Override
+    // public CloudApplication getApplication(UUID appGuid) {
+    // return executeWithRetry(() -> delegate.getApplication(appGuid));
+    // }
 
     @Override
     public CloudApplication getApplication(CloudApplicationRequiredEntities requiredEntities) {
