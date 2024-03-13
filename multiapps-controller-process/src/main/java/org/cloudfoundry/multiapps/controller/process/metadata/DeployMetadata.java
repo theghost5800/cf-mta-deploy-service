@@ -92,6 +92,11 @@ public class DeployMetadata {
                                                                                  .id(Variables.RESOURCES_FOR_DEPLOYMENT.getName())
                                                                                  .type(ParameterType.STRING)
                                                                                  .build())
+                                         .addParameter(ImmutableParameterMetadata.builder()
+                                                                                 .id(Variables.SHOULD_APPLY_ROLLING_UPDATE.getName())
+                                                                                 .type(ParameterType.BOOLEAN)
+                                                                                 .defaultValue(false)
+                                                                                 .build())
                                          .build();
     }
 

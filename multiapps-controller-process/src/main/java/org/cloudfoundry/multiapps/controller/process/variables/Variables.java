@@ -37,6 +37,7 @@ import org.cloudfoundry.multiapps.mta.model.VersionRule;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
+import com.sap.cloudfoundry.client.facade.domain.CloudDeployment;
 import com.sap.cloudfoundry.client.facade.domain.CloudPackage;
 import com.sap.cloudfoundry.client.facade.domain.CloudRoute;
 import com.sap.cloudfoundry.client.facade.domain.CloudServiceBinding;
@@ -762,4 +763,15 @@ public interface Variables {
                                                                                                    .type(new TypeReference<>() {
                                                                                                    })
                                                                                                    .build();
+
+    Variable<Boolean> SHOULD_APPLY_ROLLING_UPDATE = ImmutableSimpleVariable.<Boolean> builder()
+                                                                           .name("shouldApplyRollingUpdate")
+                                                                           .defaultValue(false)
+                                                                           .build();
+
+    Variable<CloudDeployment> CLOUD_DEPLOYMENT_TO_POLL = ImmutableJsonStringVariable.<CloudDeployment> builder()
+                                                                                    .name("cloudDeploymentToPoll")
+                                                                                    .type(new TypeReference<CloudDeployment>() {
+                                                                                    })
+                                                                                    .build();
 }

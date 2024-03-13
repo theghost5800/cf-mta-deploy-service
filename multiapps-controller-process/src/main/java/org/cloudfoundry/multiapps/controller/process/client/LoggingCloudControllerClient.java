@@ -20,6 +20,7 @@ import com.sap.cloudfoundry.client.facade.UploadStatusCallback;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudAsyncJob;
 import com.sap.cloudfoundry.client.facade.domain.CloudBuild;
+import com.sap.cloudfoundry.client.facade.domain.CloudDeployment;
 import com.sap.cloudfoundry.client.facade.domain.CloudDomain;
 import com.sap.cloudfoundry.client.facade.domain.CloudEvent;
 import com.sap.cloudfoundry.client.facade.domain.CloudPackage;
@@ -731,6 +732,18 @@ public class LoggingCloudControllerClient implements CloudControllerClient {
     public CloudAsyncJob getAsyncJob(String jobId) {
         logger.debug(Messages.GETTING_ASYNC_JOB_0, jobId);
         return delegate.getAsyncJob(jobId);
+    }
+
+    @Override
+    public CloudDeployment startRollingDeployment(UUID applicationGuid) {
+        logger.debug("Start rolling deployment for application \"{0}\"", applicationGuid);
+        return delegate.startRollingDeployment(applicationGuid);
+    }
+
+    @Override
+    public CloudDeployment getRollingDeployment(UUID deploymentGuid) {
+        logger.debug("Get rolling deployment with guid \"{0}\"", deploymentGuid);
+        return delegate.getRollingDeployment(deploymentGuid);
     }
 
 }

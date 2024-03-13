@@ -43,6 +43,7 @@ public class DeployMetadataTest extends MetadataBaseTest {
                 Variables.ABORT_ON_ERROR.getName(),
                 Variables.MODULES_FOR_DEPLOYMENT.getName(),
                 Variables.RESOURCES_FOR_DEPLOYMENT.getName(),
+                Variables.SHOULD_APPLY_ROLLING_UPDATE.getName(),
             // @formatter:on
         };
     }

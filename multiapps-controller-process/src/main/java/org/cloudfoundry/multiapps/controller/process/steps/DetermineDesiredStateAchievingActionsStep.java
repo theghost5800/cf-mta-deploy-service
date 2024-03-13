@@ -50,6 +50,11 @@ public class DetermineDesiredStateAchievingActionsStep extends SyncFlowableStep 
         boolean appHasUnstagedContent = cloudPackage != null;
         Set<ApplicationStateAction> actionsToExecute = getActionsCalculator(context).determineActionsToExecute(currentState, desiredState,
                                                                                                                !appHasUnstagedContent);
+
+        if (context.getVariable(Variables.SHOULD_APPLY_ROLLING_UPDATE)) {
+            configureActionsForRollingUpdate(actionsToExecute);
+        }
+
         getStepLogger().debug(Messages.ACTIONS_TO_EXECUTE, appName, actionsToExecute);
 
         context.setVariable(Variables.APP_STATE_ACTIONS_TO_EXECUTE, new ArrayList<>(actionsToExecute));
@@ -91,6 +96,15 @@ public class DetermineDesiredStateAchievingActionsStep extends SyncFlowableStep 
             return true;
         }
         return restartParameters.getShouldRestartOnUserProvidedChange() && userPropertiesChanged;
+    }
+
+    private void configureActionsForRollingUpdate(Set<ApplicationStateAction> actionsToExecute) {
+        if (!actionsToExecute.contains(ApplicationStateAction.EXECUTE) && actionsToExecute.contains(ApplicationStateAction.START)
+            && actionsToExecute.contains(ApplicationStateAction.STOP)) {
+            actionsToExecute.remove(ApplicationStateAction.START);
+            actionsToExecute.remove(ApplicationStateAction.STOP);
+            actionsToExecute.add(ApplicationStateAction.ROLLING_UPDATE);
+        }
     }
 
 }

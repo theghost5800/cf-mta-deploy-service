@@ -20,6 +20,7 @@ import com.sap.cloudfoundry.client.facade.UploadStatusCallback;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.CloudAsyncJob;
 import com.sap.cloudfoundry.client.facade.domain.CloudBuild;
+import com.sap.cloudfoundry.client.facade.domain.CloudDeployment;
 import com.sap.cloudfoundry.client.facade.domain.CloudDomain;
 import com.sap.cloudfoundry.client.facade.domain.CloudEvent;
 import com.sap.cloudfoundry.client.facade.domain.CloudPackage;
@@ -613,6 +614,16 @@ public class ResilientCloudControllerClient implements CloudControllerClient {
     @Override
     public CloudAsyncJob getAsyncJob(String jobId) {
         return executeWithRetry(() -> delegate.getAsyncJob(jobId));
+    }
+
+    @Override
+    public CloudDeployment startRollingDeployment(UUID applicationGuid) {
+        return executeWithRetry(() -> delegate.startRollingDeployment(applicationGuid));
+    }
+
+    @Override
+    public CloudDeployment getRollingDeployment(UUID deploymentGuid) {
+        return executeWithRetry(() -> delegate.getRollingDeployment(deploymentGuid));
     }
 
     private void executeWithRetry(Runnable operation, HttpStatus... statusesToIgnore) {
