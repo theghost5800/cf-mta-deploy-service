@@ -76,7 +76,7 @@ public interface CloudHandlerFactory extends HandlerFactory {
     ApplicationCloudModelBuilder getApplicationCloudModelBuilder(DeploymentDescriptor deploymentDescriptor, boolean prettyPrinting,
                                                                  DeployedMta deployedMta, String deployId, String namespace,
                                                                  UserMessageLogger stepLogger, AppSuffixDeterminer appSuffixDeterminer,
-                                                                 CloudControllerClient client);
+                                                                 CloudControllerClient client, boolean incrementalInstancesUpdate);
 
     ServicesCloudModelBuilder getServicesCloudModelBuilder(DeploymentDescriptor deploymentDescriptor, String namespace);
 

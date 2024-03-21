@@ -20,6 +20,7 @@ import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaServiceKey;
 import org.cloudfoundry.multiapps.controller.core.model.DynamicResolvableParameter;
 import org.cloudfoundry.multiapps.controller.core.model.ErrorType;
+import org.cloudfoundry.multiapps.controller.core.model.IncrementalAppInstanceUpdateConfiguration;
 import org.cloudfoundry.multiapps.controller.core.model.Phase;
 import org.cloudfoundry.multiapps.controller.core.model.SubprocessPhase;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationEntry;
@@ -762,4 +763,15 @@ public interface Variables {
                                                                                                    .type(new TypeReference<>() {
                                                                                                    })
                                                                                                    .build();
+
+    Variable<Boolean> SHOULD_APPLY_INCREMENTAL_INSTANCES_UPDATE = ImmutableSimpleVariable.<Boolean> builder()
+                                                                                         .name("shouldApplyIncrementalInstancesUpdate")
+                                                                                         .defaultValue(false)
+                                                                                         .build();
+
+    Variable<IncrementalAppInstanceUpdateConfiguration> INCREMENTAL_APP_INSTANCE_UPDATE_CONFIGURATION = ImmutableJsonStringVariable.<IncrementalAppInstanceUpdateConfiguration> builder()
+                                                                                                                                   .name("IncrementalAppInstanceUpdateConfiguration")
+                                                                                                                                   .type(new TypeReference<>() {
+                                                                                                                                   })
+                                                                                                                                   .build();
 }
