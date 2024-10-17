@@ -823,4 +823,24 @@ public interface Variables {
                                                                                                                                    .type(new TypeReference<>() {
                                                                                                                                    })
                                                                                                                                    .build();
+
+    Variable<Boolean> SHOULD_PRESERVE_OLD_APPS = ImmutableSimpleVariable.<Boolean> builder()
+                                                                        .name("shouldPreserveOldApps")
+                                                                        .defaultValue(false)
+                                                                        .build();
+
+    Variable<List<CloudApplication>> APPS_TO_PRESERVE = ImmutableJsonStringListVariable.<CloudApplication> builder()
+                                                                                       .name("appsToPreserve")
+                                                                                       .type(Variable.typeReference(CloudApplication.class))
+                                                                                       .defaultValue(Collections.emptyList())
+                                                                                       .build();
+
+    Variable<String> CHECKSUM_OF_MERGED_DESCRIPTOR = ImmutableSimpleVariable.<String> builder()
+                                                                            .name("checksumOfMergedDescriptor")
+                                                                            .build();
+
+    Variable<DeployedMta> PRESERVED_MTA = ImmutableJsonBinaryVariable.<DeployedMta> builder()
+                                                                     .name("preservedMta")
+                                                                     .type(Variable.typeReference(DeployedMta.class))
+                                                                     .build();
 }

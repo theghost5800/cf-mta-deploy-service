@@ -23,7 +23,6 @@ import org.cloudfoundry.multiapps.controller.core.model.BlueGreenApplicationName
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.Phase;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationEntry;
-import org.cloudfoundry.multiapps.controller.persistence.services.ProcessLogger;
 import org.cloudfoundry.multiapps.controller.persistence.services.ProcessLoggerProvider;
 import org.cloudfoundry.multiapps.controller.process.Constants;
 import org.cloudfoundry.multiapps.controller.process.Messages;
@@ -162,7 +161,8 @@ public class StepsUtil {
         }
         var loggerPrefix = getLoggerPrefix(logger);
         for (ApplicationLog log : recentLogs) {
-            processLoggerProvider.getLogger(context.getExecution(), appName).debug(loggerPrefix + "[" + appName + "] " + log.toString());
+            processLoggerProvider.getLogger(context.getExecution(), appName)
+                                 .debug(loggerPrefix + "[" + appName + "] " + log.toString());
         }
 
         var lastLog = recentLogs.get(recentLogs.size() - 1);
@@ -200,8 +200,8 @@ public class StepsUtil {
 
         return handlerFactory.getApplicationCloudModelBuilder(deploymentDescriptor, true, deployedMta, deployId, namespace,
                                                               context.getStepLogger(), getAppSuffixDeterminer(context),
-                                                              context.getControllerClient(),
-                                                              shouldApplyIncrementalInstancesUpdate(context));
+                                                              context.getControllerClient(), shouldApplyIncrementalInstancesUpdate(context),
+                                                              context.getVariable(Variables.CHECKSUM_OF_MERGED_DESCRIPTOR));
     }
 
     static AppSuffixDeterminer getAppSuffixDeterminer(ProcessContext context) {

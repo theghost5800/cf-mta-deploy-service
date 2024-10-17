@@ -17,6 +17,7 @@ import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaService;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaServiceKey;
 import org.cloudfoundry.multiapps.controller.core.security.serialization.SecureSerialization;
 import org.cloudfoundry.multiapps.controller.core.security.token.TokenService;
+import org.cloudfoundry.multiapps.controller.process.Constants;
 import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,6 +49,10 @@ public class DetectDeployedMtaStep extends SyncFlowableStep {
 
         DeployedMta deployedMta = detectDeployedMta(mtaId, mtaNamespace, client, context);
 
+        if (context.getVariable(Variables.SHOULD_PRESERVE_OLD_APPS)) {
+            detectPreservedMta(mtaId, client, context);
+        }
+
         var deployedServiceKeys = detectDeployedServiceKeys(mtaId, mtaNamespace, deployedMta, context);
         context.setVariable(Variables.DEPLOYED_MTA_SERVICE_KEYS, deployedServiceKeys);
         getStepLogger().debug(Messages.DEPLOYED_MTA_SERVICE_KEYS, SecureSerialization.toJson(deployedServiceKeys));
@@ -71,6 +76,22 @@ public class DetectDeployedMtaStep extends SyncFlowableStep {
         MtaMetadata metadata = deployedMta.getMetadata();
         logDetectedDeployedMta(mtaNamespace, metadata);
         return deployedMta;
+    }
+
+    private void detectPreservedMta(String mtaId, CloudControllerClient client, ProcessContext context) {
+        getStepLogger().debug("Detecting preserved mta by id \"{0}\"", mtaId);
+        Optional<DeployedMta> optionalPreservedMta = deployedMtaDetector.detectDeployedMtaByNameAndNamespace(mtaId,
+                                                                                                             Constants.MTA_PRESERVED_NAMESPACE,
+                                                                                                             client);
+
+        if (optionalPreservedMta.isEmpty()) {
+            context.setVariable(Variables.PRESERVED_MTA, null);
+            return;
+        }
+
+        DeployedMta preservedMta = optionalPreservedMta.get();
+        context.setVariable(Variables.PRESERVED_MTA, preservedMta);
+        getStepLogger().debug("Detected preserved mta: {0}", SecureSerialization.toJson(preservedMta));
     }
 
     private List<DeployedMtaServiceKey> detectDeployedServiceKeys(String mtaId, String mtaNamespace, DeployedMta deployedMta,

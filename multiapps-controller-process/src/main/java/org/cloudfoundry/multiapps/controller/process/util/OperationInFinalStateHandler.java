@@ -15,6 +15,7 @@ import org.cloudfoundry.multiapps.controller.api.model.ProcessType;
 import org.cloudfoundry.multiapps.controller.core.cf.CloudControllerClientProvider;
 import org.cloudfoundry.multiapps.controller.core.util.LoggingUtil;
 import org.cloudfoundry.multiapps.controller.core.util.SafeExecutor;
+import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.persistence.model.HistoricOperationEvent;
 import org.cloudfoundry.multiapps.controller.persistence.model.ImmutableHistoricOperationEvent;
 import org.cloudfoundry.multiapps.controller.persistence.services.FileService;
@@ -46,6 +47,8 @@ public class OperationInFinalStateHandler {
     @Inject
     private HistoricOperationEventService historicOperationEventService;
     @Inject
+    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    @Inject
     private OperationTimeAggregator operationTimeAggregator;
     @Inject
     private DynatracePublisher dynatracePublisher;
@@ -61,6 +64,7 @@ public class OperationInFinalStateHandler {
         safeExecutor.execute(() -> deleteDeploymentFiles(correlationId, execution));
         safeExecutor.execute(() -> deleteCloudControllerClientForProcess(execution));
         safeExecutor.execute(() -> setOperationState(correlationId, state));
+        safeExecutor.execute(() -> deletePreviousPreservedDescriptors(execution, state));
         safeExecutor.execute(() -> trackOperationDuration(correlationId, execution, processType, state));
     }
 
@@ -112,6 +116,17 @@ public class OperationInFinalStateHandler {
 
     private HistoricOperationEvent.EventType toEventType(State state) {
         return state == Operation.State.FINISHED ? HistoricOperationEvent.EventType.FINISHED : HistoricOperationEvent.EventType.ABORTED;
+    }
+
+    private void deletePreviousPreservedDescriptors(DelegateExecution execution, Operation.State state) {
+        if (state == Operation.State.FINISHED && VariableHandling.get(execution, Variables.SHOULD_PRESERVE_OLD_APPS)) {
+            String checksumOfMergedDescriptors = VariableHandling.get(execution, Variables.CHECKSUM_OF_MERGED_DESCRIPTOR);
+            mtaDescriptorPreserverService.createQuery()
+                                         .mtaId(VariableHandling.get(execution, Variables.MTA_ID))
+                                         .spaceId(VariableHandling.get(execution, Variables.SPACE_GUID))
+                                         .checksumNotMatch(checksumOfMergedDescriptors)
+                                         .delete();
+        }
     }
 
     private void trackOperationDuration(String correlationId, DelegateExecution execution, ProcessType processType, Operation.State state) {
