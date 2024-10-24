@@ -1,22 +1,28 @@
 package org.cloudfoundry.multiapps.controller.process.steps;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.cloudfoundry.multiapps.common.ConflictException;
+import org.cloudfoundry.multiapps.controller.api.model.ProcessType;
 import org.cloudfoundry.multiapps.controller.core.helpers.ApplicationNameSuffixAppender;
 import org.cloudfoundry.multiapps.controller.core.model.ApplicationColor;
 import org.cloudfoundry.multiapps.controller.core.model.BlueGreenApplicationNameSuffix;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
 import org.cloudfoundry.multiapps.controller.core.model.ImmutableDeployedMta;
+import org.cloudfoundry.multiapps.controller.core.model.ImmutableDeployedMtaApplication;
+import org.cloudfoundry.multiapps.controller.core.util.NameUtil;
+import org.cloudfoundry.multiapps.controller.process.Constants;
 import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.util.ApplicationColorDetector;
 import org.cloudfoundry.multiapps.controller.process.util.ApplicationProductizationStateUpdater;
 import org.cloudfoundry.multiapps.controller.process.util.ApplicationProductizationStateUpdaterBasedOnAge;
 import org.cloudfoundry.multiapps.controller.process.util.ApplicationProductizationStateUpdaterBasedOnColor;
+import org.cloudfoundry.multiapps.controller.process.util.ProcessTypeParser;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.cloudfoundry.multiapps.mta.model.DeploymentDescriptor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -30,6 +36,8 @@ public class RenameApplicationsStep extends SyncFlowableStep {
 
     @Inject
     private ApplicationColorDetector applicationColorDetector;
+    @Inject
+    private ProcessTypeParser processTypeParser;
 
     @Override
     protected StepPhase executeStep(ProcessContext context) {
@@ -39,6 +47,10 @@ public class RenameApplicationsStep extends SyncFlowableStep {
     }
 
     private RenameFlow createFlow(ProcessContext context) {
+        if (processTypeParser.getProcessType(context.getExecution())
+                             .equals(ProcessType.REVERT_DEPLOY)) {
+            return new RenameApplicationsForRevert();
+        }
         if (context.getVariable(Variables.KEEP_ORIGINAL_APP_NAMES_AFTER_DEPLOY)) {
             return new RenameApplicationsWithOldNewSuffix();
         }
@@ -142,6 +154,46 @@ public class RenameApplicationsStep extends SyncFlowableStep {
         ApplicationNameSuffixAppender appender = new ApplicationNameSuffixAppender(suffix);
         descriptor.accept(appender);
         context.setVariable(Variables.DEPLOYMENT_DESCRIPTOR, descriptor);
+    }
+
+    class RenameApplicationsForRevert implements RenameFlow {
+
+        @Override
+        public void execute(ProcessContext context) {
+            getStepLogger().debug("Rename applications for revert");
+            DeployedMta deployedMta = context.getVariable(Variables.DEPLOYED_MTA);
+            DeployedMta preservedMta = context.getVariable(Variables.PRESERVED_MTA);
+            CloudControllerClient client = context.getControllerClient();
+
+            List<DeployedMtaApplication> deployedMtaApplications = new ArrayList<>();
+            for (DeployedMtaApplication deployedMtaApplication : deployedMta.getApplications()) {
+                String activeApplicationName = deployedMtaApplication.getName();
+                String toBeDeletedApplicationName = NameUtil.computeValidApplicationName(activeApplicationName, "to-be-deleted", true);
+                getStepLogger().info("Rename current active application \"{0}\" to \"{1}\"", activeApplicationName,
+                                     toBeDeletedApplicationName);
+                client.rename(activeApplicationName, toBeDeletedApplicationName);
+                deployedMtaApplications.add(ImmutableDeployedMtaApplication.copyOf(deployedMtaApplication)
+                                                                           .withName(toBeDeletedApplicationName));
+            }
+
+            List<DeployedMtaApplication> preservedMtaApplications = new ArrayList<>();
+            for (DeployedMtaApplication preservedMtaApplication : preservedMta.getApplications()) {
+                String preservedApplicationName = preservedMtaApplication.getName();
+                String applicationNameWithoutMtaPreservedNamespace = preservedApplicationName.substring(NameUtil.getNamespacePrefix(Constants.MTA_PRESERVED_NAMESPACE)
+                                                                                                                .length());
+                getStepLogger().info("Rename preserved application \"{0}\" to \"{1}\"", preservedApplicationName,
+                                     applicationNameWithoutMtaPreservedNamespace);
+                client.rename(preservedApplicationName, applicationNameWithoutMtaPreservedNamespace);
+                preservedMtaApplications.add(ImmutableDeployedMtaApplication.copyOf(preservedMtaApplication)
+                                                                            .withName(applicationNameWithoutMtaPreservedNamespace));
+            }
+
+            context.setVariable(Variables.DEPLOYED_MTA, ImmutableDeployedMta.copyOf(deployedMta)
+                                                                            .withApplications(deployedMtaApplications));
+            context.setVariable(Variables.PRESERVED_MTA, ImmutableDeployedMta.copyOf(preservedMta)
+                                                                             .withApplications(preservedMtaApplications));
+        }
+
     }
 
 }

@@ -76,7 +76,10 @@ public class ServiceBindingParametersGetter {
     }
 
     private Map<String, Object> getFileProvidedBindingParameters(String requiredDependencyName) throws FileStorageException {
-        String archiveId = context.getRequiredVariable(Variables.APP_ARCHIVE_ID);
+        String archiveId = context.getVariable(Variables.APP_ARCHIVE_ID);
+        if (archiveId == null) {
+            return Collections.emptyMap();
+        }
         MtaArchiveElements mtaArchiveElements = context.getVariable(Variables.MTA_ARCHIVE_ELEMENTS);
         String fileName = mtaArchiveElements.getRequiredDependencyFileName(requiredDependencyName);
         if (fileName == null) {

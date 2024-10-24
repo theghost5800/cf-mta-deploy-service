@@ -843,4 +843,9 @@ public interface Variables {
                                                                      .name("preservedMta")
                                                                      .type(Variable.typeReference(DeployedMta.class))
                                                                      .build();
+
+    Variable<Boolean> SHOULD_PROCESS_SERVICES = ImmutableSimpleVariable.<Boolean> builder()
+                                                                       .name("shouldProcessServices")
+                                                                       .defaultValue(false)
+                                                                       .build();
 }

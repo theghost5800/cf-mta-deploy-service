@@ -64,7 +64,8 @@ public class OperationInFinalStateHandler {
         safeExecutor.execute(() -> deleteDeploymentFiles(correlationId, execution));
         safeExecutor.execute(() -> deleteCloudControllerClientForProcess(execution));
         safeExecutor.execute(() -> setOperationState(correlationId, state));
-        safeExecutor.execute(() -> deletePreviousPreservedDescriptors(execution, state));
+        // It is commented out for now because current code will delete all other descriptors needed for revert
+        // safeExecutor.execute(() -> deletePreviousPreservedDescriptors(execution, state));
         safeExecutor.execute(() -> trackOperationDuration(correlationId, execution, processType, state));
     }
 
