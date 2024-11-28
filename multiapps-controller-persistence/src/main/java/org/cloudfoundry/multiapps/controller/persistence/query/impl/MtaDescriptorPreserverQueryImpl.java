@@ -11,10 +11,10 @@ import javax.persistence.NonUniqueResultException;
 import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
 import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverDto;
 import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverDto.AttributeNames;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverService.MtaDescriptorPreserverMapper;
 import org.cloudfoundry.multiapps.controller.persistence.query.MtaDescriptorPreserverQuery;
 import org.cloudfoundry.multiapps.controller.persistence.query.criteria.ImmutableQueryAttributeRestriction;
 import org.cloudfoundry.multiapps.controller.persistence.query.criteria.QueryCriteria;
+import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService.MtaDescriptorPreserverMapper;
 
 public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescriptorPreserver, MtaDescriptorPreserverQuery>
     implements MtaDescriptorPreserverQuery {
@@ -58,6 +58,16 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
+    public MtaDescriptorPreserverQuery namespace(String namespace) {
+        queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
+                                                                       .attribute(AttributeNames.NAMESPACE)
+                                                                       .condition(getCriteriaBuilder()::equal)
+                                                                       .value(namespace)
+                                                                       .build());
+        return this;
+    }
+
+    @Override
     public MtaDescriptorPreserverQuery checksum(String checksum) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.CHECKSUM)
@@ -68,11 +78,12 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserverQuery checksumNotMatch(String checksum) {
+    public MtaDescriptorPreserverQuery checksumsNotMatch(List<String> checksums) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.CHECKSUM)
-                                                                       .condition(getCriteriaBuilder()::notEqual)
-                                                                       .value(checksum)
+                                                                       .condition((expression, value) -> expression.in(checksums)
+                                                                                                                   .not())
+                                                                       .value(checksums)
                                                                        .build());
         return this;
     }

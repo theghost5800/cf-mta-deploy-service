@@ -33,8 +33,9 @@ import org.cloudfoundry.multiapps.controller.core.security.serialization.SecureS
 import org.cloudfoundry.multiapps.controller.core.util.CloudModelBuilderUtil;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationSubscription;
 import org.cloudfoundry.multiapps.controller.persistence.services.ConfigurationSubscriptionService;
+import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.process.Messages;
-import org.cloudfoundry.multiapps.controller.process.util.ApplictationsPreserveCalculator;
+import org.cloudfoundry.multiapps.controller.process.util.ApplicationsPreserveCalculator;
 import org.cloudfoundry.multiapps.controller.process.util.ProcessTypeParser;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.cloudfoundry.multiapps.mta.model.DeploymentDescriptor;
@@ -57,6 +58,8 @@ public class BuildCloudUndeployModelStep extends SyncFlowableStep {
     private ModuleToDeployHelper moduleToDeployHelper;
     @Inject
     private ProcessTypeParser processTypeParser;
+    @Inject
+    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
 
     @Override
     protected StepPhase executeStep(ProcessContext context) {
@@ -100,10 +103,12 @@ public class BuildCloudUndeployModelStep extends SyncFlowableStep {
         List<CloudApplication> appsToUndeploy = computeAppsToUndeploy(deployedAppsToUndeploy, context.getControllerClient());
 
         DeployedMta preservedMta = context.getVariable(Variables.PRESERVED_MTA);
-        ApplictationsPreserveCalculator applicationsPreserveCalculator = new ApplictationsPreserveCalculator(deployedMta, preservedMta);
+        ApplicationsPreserveCalculator applicationsPreserveCalculator = new ApplicationsPreserveCalculator(deployedMta,
+                                                                                                           preservedMta,
+                                                                                                           mtaDescriptorPreserverService);
         List<CloudApplication> appsToPreserve = computeAppsToPreserve(context, appsToUndeploy, applicationsPreserveCalculator);
 
-        List<CloudApplication> preservedAppsToUndeploy = applicationsPreserveCalculator.calculateAppsToUndeploy(appsToPreserve);
+        List<CloudApplication> preservedAppsToUndeploy = applicationsPreserveCalculator.calculateAppsToUndeploy(context, appsToPreserve);
 
         appsToUndeploy.removeAll(appsToPreserve);
         appsToUndeploy.addAll(preservedAppsToUndeploy);
@@ -354,61 +359,13 @@ public class BuildCloudUndeployModelStep extends SyncFlowableStep {
     }
 
     private List<CloudApplication> computeAppsToPreserve(ProcessContext context, List<CloudApplication> appsToUndeploy,
-                                                         ApplictationsPreserveCalculator applicationsPreserveCalculator) {
+                                                         ApplicationsPreserveCalculator applicationsPreserveCalculator) {
         boolean shouldPreserveOldApps = context.getVariable(Variables.SHOULD_PRESERVE_OLD_APPS);
         if (!shouldPreserveOldApps) {
             return Collections.emptyList();
         }
-        // String deploymentDescriptorVersion = context.getVariable(Variables.DEPLOYMENT_DESCRIPTOR)
-        // .getVersion();
         String checksumOfCurrentDescriptor = context.getVariable(Variables.CHECKSUM_OF_MERGED_DESCRIPTOR);
-
         return applicationsPreserveCalculator.calculateAppsToPreserve(appsToUndeploy, checksumOfCurrentDescriptor);
-
-        // DeployedMta preservedMta = context.getVariable(Variables.PRESERVED_MTA);
-        // DeployedMta deployedMta = context.getVariable(Variables.DEPLOYED_MTA);
-        //
-        // if (preservedMta != null && !preservedMta.getApplications()
-        // .isEmpty()
-        // && preservedMta.getMetadata()
-        // .getVersion()
-        // .toString()
-        // .equals(deploymentDescriptorVersion)
-        // && preservedMta.getMetadata()
-        // .getVersion()
-        // .equals(deployedMta.getMetadata()
-        // .getVersion())) {
-        // return Collections.emptyList();
-        // }
-        //
-        // if (deployedMta != null && deployedMta.getMetadata()
-        // .getVersion()
-        // .toString()
-        // .equals(deploymentDescriptorVersion)) {
-        // return Collections.emptyList();
-        // }
-        //
-        // List<CloudApplication> appsToPreserve = new ArrayList<>();
-        // for (CloudApplication deployedApplication : appsToUndeploy) {
-        // String descriptorChecksumOfDeployedApplication = deployedApplication.getV3Metadata()
-        // .getLabels()
-        // .get("mta_preserved_descriptor_checksum");
-        // ProductizationState productizationStateOfDeployedApplication = deployedAppsToUndeploy.stream()
-        // .filter(deployedMtaApp -> deployedMtaApp.getName()
-        // .equals(deployedApplication.getName()))
-        // .map(DeployedMtaApplication::getProductizationState)
-        // .findFirst()
-        // .get();
-        // getStepLogger().info("Current merged descriptor checksum is \"{0}\" and current app detected descriptor checksum is \"{1}\"",
-        // checksumOfCurrentDescriptor, descriptorChecksumOfDeployedApplication);
-        // if (descriptorChecksumOfDeployedApplication == null
-        // || !checksumOfCurrentDescriptor.equals(descriptorChecksumOfDeployedApplication)
-        // && productizationStateOfDeployedApplication == ProductizationState.LIVE) {
-        // appsToPreserve.add(deployedApplication);
-        // }
-        // }
-        //
-        // return appsToPreserve;
     }
 
     private List<CloudApplication> computeAppsToUndeploy(List<DeployedMtaApplication> modulesToUndeploy, CloudControllerClient client) {

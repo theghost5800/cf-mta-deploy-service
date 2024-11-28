@@ -17,6 +17,7 @@ import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaService;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaServiceKey;
 import org.cloudfoundry.multiapps.controller.core.security.serialization.SecureSerialization;
 import org.cloudfoundry.multiapps.controller.core.security.token.TokenService;
+import org.cloudfoundry.multiapps.controller.core.util.NameUtil;
 import org.cloudfoundry.multiapps.controller.process.Constants;
 import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
@@ -49,9 +50,7 @@ public class DetectDeployedMtaStep extends SyncFlowableStep {
 
         DeployedMta deployedMta = detectDeployedMta(mtaId, mtaNamespace, client, context);
 
-        if (context.getVariable(Variables.SHOULD_PRESERVE_OLD_APPS)) {
-            detectPreservedMta(mtaId, client, context);
-        }
+        detectPreservedMta(mtaId, mtaNamespace, client, context);
 
         var deployedServiceKeys = detectDeployedServiceKeys(mtaId, mtaNamespace, deployedMta, context);
         context.setVariable(Variables.DEPLOYED_MTA_SERVICE_KEYS, deployedServiceKeys);
@@ -78,10 +77,11 @@ public class DetectDeployedMtaStep extends SyncFlowableStep {
         return deployedMta;
     }
 
-    private void detectPreservedMta(String mtaId, CloudControllerClient client, ProcessContext context) {
-        getStepLogger().debug("Detecting preserved mta by id \"{0}\"", mtaId);
+    private void detectPreservedMta(String mtaId, String mtaNamespace, CloudControllerClient client, ProcessContext context) {
+        getStepLogger().debug("Detecting preserved mta by id \"{0}\" and namespace \"{1}\"", mtaId, mtaNamespace);
         Optional<DeployedMta> optionalPreservedMta = deployedMtaDetector.detectDeployedMtaByNameAndNamespace(mtaId,
-                                                                                                             Constants.MTA_PRESERVED_NAMESPACE,
+                                                                                                             NameUtil.computeUserNamespaceWithSystemNamespace(Constants.MTA_PRESERVED_NAMESPACE,
+                                                                                                                                                              mtaNamespace),
                                                                                                              client);
 
         if (optionalPreservedMta.isEmpty()) {

@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import com.sap.cloudfoundry.client.facade.domain.ServiceCredentialBindingOperation;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.CloudApplicationExtended;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.CloudServiceInstanceExtended;
 import org.cloudfoundry.multiapps.controller.client.lib.domain.ImmutableBindingDetails;
@@ -41,6 +40,7 @@ import com.sap.cloudfoundry.client.facade.domain.CloudServiceBinding;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableCloudMetadata;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableCloudServiceBinding;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableServiceCredentialBindingOperation;
+import com.sap.cloudfoundry.client.facade.domain.ServiceCredentialBindingOperation;
 
 class ServiceBindingParametersGetterTest {
 
@@ -201,6 +201,7 @@ class ServiceBindingParametersGetterTest {
         when(context.getStepLogger()).thenReturn(stepLogger);
         when(context.getVariable(Variables.SERVICES_TO_BIND)).thenReturn(Collections.singletonList(serviceInstance));
         when(context.getRequiredVariable(Variables.APP_ARCHIVE_ID)).thenReturn(APP_ARCHIVE_ID);
+        when(context.getVariable(Variables.APP_ARCHIVE_ID)).thenReturn(APP_ARCHIVE_ID);
         when(context.getVariable(Variables.MTA_ARCHIVE_ELEMENTS)).thenReturn(mtaArchiveElements);
         when(context.getControllerClient()).thenReturn(client);
     }
@@ -220,9 +221,9 @@ class ServiceBindingParametersGetterTest {
                                                                                                              .guid(RANDOM_GUID)
                                                                                                              .build())
                                                                              .serviceBindingOperation(ImmutableServiceCredentialBindingOperation.builder()
-                                                                                                                                      .type(ServiceCredentialBindingOperation.Type.CREATE)
-                                                                                                                                      .state(ServiceCredentialBindingOperation.State.SUCCEEDED)
-                                                                                                                                      .build())
+                                                                                                                                                .type(ServiceCredentialBindingOperation.Type.CREATE)
+                                                                                                                                                .state(ServiceCredentialBindingOperation.State.SUCCEEDED)
+                                                                                                                                                .build())
                                                                              .build();
             when(client.getServiceBindingForApplication(RANDOM_GUID, RANDOM_GUID)).thenReturn(serviceBinding);
             return;

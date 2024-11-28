@@ -10,7 +10,7 @@ import org.cloudfoundry.multiapps.controller.core.cf.CloudHandlerFactory;
 import org.cloudfoundry.multiapps.controller.core.helpers.MtaDescriptorMerger;
 import org.cloudfoundry.multiapps.controller.persistence.dto.ImmutableMtaDescriptorPreserver;
 import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.cloudfoundry.multiapps.mta.model.DeploymentDescriptor;
@@ -55,9 +55,11 @@ public class MergeDescriptorsStep extends SyncFlowableStep {
         String currentDeploymentDescriptorsChecksum = context.getVariable(Variables.CHECKSUM_OF_MERGED_DESCRIPTOR);
         String spaceGuid = context.getVariable(Variables.SPACE_GUID);
         String mtaId = descriptor.getId();
+        String mtaNamesapce = context.getVariable(Variables.MTA_NAMESPACE);
         List<MtaDescriptorPreserver> preservedDescriptors = mtaDescriptorPreserverService.createQuery()
                                                                                          .mtaId(mtaId)
                                                                                          .spaceId(spaceGuid)
+                                                                                         .namespace(mtaNamesapce)
                                                                                          .checksum(currentDeploymentDescriptorsChecksum)
                                                                                          .list();
         if (preservedDescriptors.isEmpty()) {
@@ -66,6 +68,7 @@ public class MergeDescriptorsStep extends SyncFlowableStep {
                                                                              .mtaId(mtaId)
                                                                              .mtaVersion(descriptor.getVersion())
                                                                              .spaceId(spaceGuid)
+                                                                             .namespace(mtaNamesapce)
                                                                              .checksum(currentDeploymentDescriptorsChecksum)
                                                                              .build());
         }

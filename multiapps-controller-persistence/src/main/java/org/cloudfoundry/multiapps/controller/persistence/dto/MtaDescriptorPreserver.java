@@ -2,6 +2,7 @@ package org.cloudfoundry.multiapps.controller.persistence.dto;
 
 import java.time.LocalDateTime;
 
+import org.cloudfoundry.multiapps.common.Nullable;
 import org.cloudfoundry.multiapps.mta.model.DeploymentDescriptor;
 import org.immutables.value.Value;
 
@@ -20,6 +21,9 @@ public interface MtaDescriptorPreserver {
     String getMtaVersion();
 
     String getSpaceId();
+
+    @Nullable
+    String getNamespace();
 
     String getChecksum();
 

@@ -35,6 +35,10 @@ public class RevertDeployMetadata {
                                                                                  .required(true)
                                                                                  .build())
                                          .addParameter(ImmutableParameterMetadata.builder()
+                                                                                 .id(Variables.DELETE_SERVICES.getName())
+                                                                                 .type(ParameterType.BOOLEAN)
+                                                                                 .build())
+                                         .addParameter(ImmutableParameterMetadata.builder()
                                                                                  .id(Variables.NO_FAIL_ON_MISSING_PERMISSIONS.getName())
                                                                                  .type(ParameterType.BOOLEAN)
                                                                                  .build())
@@ -66,6 +70,11 @@ public class RevertDeployMetadata {
                                                                                  .id(Variables.SHOULD_PROCESS_SERVICES.getName())
                                                                                  .type(ParameterType.BOOLEAN)
                                                                                  .defaultValue(false)
+                                                                                 .build())
+                                         .addParameter(ImmutableParameterMetadata.builder()
+                                                                                 .id(Variables.PROCESS_USER_PROVIDED_SERVICES_DURING_REVERT.getName())
+                                                                                 .type(ParameterType.BOOLEAN)
+                                                                                 .defaultValue(true)
                                                                                  .build())
                                          .build();
     }

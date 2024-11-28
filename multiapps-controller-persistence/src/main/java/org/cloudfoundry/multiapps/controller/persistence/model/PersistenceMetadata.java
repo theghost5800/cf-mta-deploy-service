@@ -107,6 +107,7 @@ public class PersistenceMetadata {
         public static final String MTA_DESCRIPTOR_PRESERVER_MTA_ID = "mta_id";
         public static final String MTA_DESCRIPTOR_PRESERVER_MTA_VERSION = "mta_version";
         public static final String MTA_DESCRIPTOR_PRESERVER_SPACE_ID = "space_id";
+        public static final String MTA_DESCRIPTOR_PRESERVER_NAMESPACE = "namespace";
         public static final String MTA_DESCRIPTOR_PRESERVER_CHECKSUM = "checksum";
         public static final String MTA_DESCRIPTOR_PRESERVER_TIMESTAMP = "timestamp";
     }

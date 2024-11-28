@@ -27,6 +27,7 @@ public class MtaDescriptorPreserverDto implements DtoWithPrimaryKey<Long> {
         public static final String ID = "id";
         public static final String MTA_ID = "mtaId";
         public static final String SPACE_ID = "spaceId";
+        public static final String NAMESPACE = "namespace";
         public static final String CHECKSUM = "checksum";
         public static final String TIMESTAMP = "timestamp";
     }
@@ -49,6 +50,9 @@ public class MtaDescriptorPreserverDto implements DtoWithPrimaryKey<Long> {
     @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_SPACE_ID, nullable = false)
     private String spaceId;
 
+    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_NAMESPACE, nullable = true)
+    private String namespace;
+
     @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_CHECKSUM, nullable = false)
     private String checksum;
 
@@ -59,13 +63,14 @@ public class MtaDescriptorPreserverDto implements DtoWithPrimaryKey<Long> {
         // Required by JPA
     }
 
-    public MtaDescriptorPreserverDto(long id, byte[] descriptor, String mtaId, String mtaVersion, String spaceId, String checksum,
-                                     LocalDateTime timestamp) {
+    public MtaDescriptorPreserverDto(long id, byte[] descriptor, String mtaId, String mtaVersion, String spaceId, String namespace,
+                                     String checksum, LocalDateTime timestamp) {
         this.id = id;
         this.descriptor = descriptor;
         this.mtaId = mtaId;
         this.mtaVersion = mtaVersion;
         this.spaceId = spaceId;
+        this.namespace = namespace;
         this.checksum = checksum;
         this.timestamp = timestamp;
     }
@@ -98,6 +103,10 @@ public class MtaDescriptorPreserverDto implements DtoWithPrimaryKey<Long> {
 
     public String getSpaceId() {
         return spaceId;
+    }
+
+    public String getNamespace() {
+        return namespace;
     }
 
     public String getChecksum() {

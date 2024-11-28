@@ -13,8 +13,9 @@ import org.cloudfoundry.multiapps.controller.core.cf.detect.DeployedMtaDetector;
 import org.cloudfoundry.multiapps.controller.core.cf.metadata.MtaMetadataLabels;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
+import org.cloudfoundry.multiapps.controller.core.util.NameUtil;
 import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.persistence.services.OperationService;
 import org.cloudfoundry.multiapps.controller.process.Constants;
 import org.cloudfoundry.multiapps.controller.process.util.ProcessConflictPreventer;
@@ -49,12 +50,17 @@ public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
         CloudControllerClient client = context.getControllerClient();
         String spaceGuid = context.getVariable(Variables.SPACE_GUID);
         String mtaId = context.getVariable(Variables.MTA_ID);
+        String mtaNamespace = context.getVariable(Variables.MTA_NAMESPACE);
+        String mtaNamespaceWithSystemNamespace = NameUtil.computeUserNamespaceWithSystemNamespace(Constants.MTA_PRESERVED_NAMESPACE,
+                                                                                                  mtaNamespace);
+
+        acquireOperationLock(context, mtaId);
 
         Optional<DeployedMta> preservedMtaOptional = deployedMtaDetector.detectDeployedMtaByNameAndNamespace(mtaId,
-                                                                                                             Constants.MTA_PRESERVED_NAMESPACE,
+                                                                                                             mtaNamespaceWithSystemNamespace,
                                                                                                              client);
 
-        Optional<DeployedMta> deployedMtaOptional = deployedMtaDetector.detectDeployedMtaByNameAndNamespace(mtaId, null, client);
+        Optional<DeployedMta> deployedMtaOptional = deployedMtaDetector.detectDeployedMtaByNameAndNamespace(mtaId, mtaNamespace, client);
         if (preservedMtaOptional.isEmpty() || deployedMtaOptional.isEmpty()) {
             throw new ContentException("Revert of mta id \"{0}\" cannot be done due to missing deployed/preserved mta used to be revert",
                                        mtaId);
@@ -65,15 +71,29 @@ public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
                                                               .getV3Metadata()
                                                               .getLabels()
                                                               .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM);
+
+        if (descriptorChecksumOfPreservedMta == null) {
+            throw new ContentException("Descriptor checksum is not set in the application metadata and rollback operation cannot be done");
+        }
+
+        if (!preservedMta.getApplications()
+                         .stream()
+                         .allMatch(application -> descriptorChecksumOfPreservedMta.equals(application.getV3Metadata()
+                                                                                                     .getLabels()
+                                                                                                     .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM)))) {
+            throw new ContentException("Revert operation cannot be done due to preserved applications with different checksums!");
+        }
+
         MtaDescriptorPreserver preservedDescriptor = null;
         try {
             preservedDescriptor = mtaDescriptorPreserverService.createQuery()
                                                                .mtaId(mtaId)
                                                                .spaceId(spaceGuid)
+                                                               .namespace(mtaNamespace)
                                                                .checksum(descriptorChecksumOfPreservedMta)
                                                                .singleResult();
         } catch (NoResultException e) {
-            throw new ContentException("Revert of mta id \"{0}\" cannot be done due to missing deployed mta used to be revert", mtaId);
+            throw new ContentException("Revert of mta id \"{0}\" cannot be done due to missing descriptor used to perform revert", mtaId);
         }
 
         for (DeployedMtaApplication deployedApplication : preservedMta.getApplications()) {
@@ -86,7 +106,6 @@ public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
             }
         }
 
-        acquireOperationLock(context, mtaId);
         context.setVariable(Variables.DEPLOYMENT_DESCRIPTOR, preservedDescriptor.getDescriptor());
         context.setVariable(Variables.MTA_MAJOR_SCHEMA_VERSION, preservedDescriptor.getDescriptor()
                                                                                    .getMajorSchemaVersion());

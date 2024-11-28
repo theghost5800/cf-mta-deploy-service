@@ -26,18 +26,21 @@ public class PrepareApplicationRevertStep extends SyncFlowableStep {
     protected StepPhase executeStep(ProcessContext context) throws Exception {
         CloudApplication cloudApplication = context.getVariable(Variables.APP_TO_PROCESS);
         CloudControllerClient client = context.getControllerClient();
+        String mtaNamespace = context.getVariable(Variables.MTA_NAMESPACE);
+        String mtaUserNamespaceWithSystemNamespace = NameUtil.computeUserNamespaceWithSystemNamespace(Constants.MTA_PRESERVED_NAMESPACE,
+                                                                                                      mtaNamespace);
 
         String newApplicationName = BlueGreenApplicationNameSuffix.removeSuffix(cloudApplication.getName());
         newApplicationName = NameUtil.computeValidApplicationName(newApplicationName, Constants.MTA_PRESERVED_NAMESPACE, true);
+
+        getStepLogger().info("Renaming application \"{0}\" to \"{1}\" to be used for future revert");
         client.rename(cloudApplication.getName(), newApplicationName);
-        String hashedMtaNamespace = MtaMetadataUtil.getHashedLabel(Constants.MTA_PRESERVED_NAMESPACE);
+        String hashedMtaNamespace = MtaMetadataUtil.getHashedLabel(mtaUserNamespaceWithSystemNamespace);
         client.updateApplicationMetadata(cloudApplication.getGuid(), Metadata.builder()
                                                                              .from(cloudApplication.getV3Metadata())
-                                                                             // .label(MtaMetadataLabels.MTA_PRESERVED_DESCRIPTOR_CHECKSUM,
-                                                                             // context.getVariable(Variables.CHECKSUM_OF_MERGED_DESCRIPTOR))
                                                                              .label(MtaMetadataLabels.MTA_NAMESPACE, hashedMtaNamespace)
                                                                              .annotation(MtaMetadataAnnotations.MTA_NAMESPACE,
-                                                                                         Constants.MTA_PRESERVED_NAMESPACE)
+                                                                                         mtaUserNamespaceWithSystemNamespace)
                                                                              .build());
 
         return StepPhase.DONE;

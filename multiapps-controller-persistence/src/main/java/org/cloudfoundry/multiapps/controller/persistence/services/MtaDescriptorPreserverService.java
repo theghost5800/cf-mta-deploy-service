@@ -1,4 +1,4 @@
-package org.cloudfoundry.multiapps.controller.persistence.dto;
+package org.cloudfoundry.multiapps.controller.persistence.services;
 
 import java.time.LocalDateTime;
 
@@ -9,10 +9,11 @@ import javax.persistence.EntityManagerFactory;
 import org.cloudfoundry.multiapps.common.ConflictException;
 import org.cloudfoundry.multiapps.common.NotFoundException;
 import org.cloudfoundry.multiapps.common.util.JsonUtil;
+import org.cloudfoundry.multiapps.controller.persistence.dto.ImmutableMtaDescriptorPreserver;
+import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
+import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverDto;
 import org.cloudfoundry.multiapps.controller.persistence.query.MtaDescriptorPreserverQuery;
 import org.cloudfoundry.multiapps.controller.persistence.query.impl.MtaDescriptorPreserverQueryImpl;
-import org.cloudfoundry.multiapps.controller.persistence.services.PersistenceObjectMapper;
-import org.cloudfoundry.multiapps.controller.persistence.services.PersistenceService;
 import org.cloudfoundry.multiapps.mta.model.DeploymentDescriptor;
 
 @Named
@@ -60,6 +61,7 @@ public class MtaDescriptorPreserverService extends PersistenceService<MtaDescrip
                                                   .mtaId(dto.getMtaId())
                                                   .mtaVersion(dto.getMtaVersion())
                                                   .spaceId(dto.getSpaceId())
+                                                  .namespace(dto.getNamespace())
                                                   .checksum(dto.getChecksum())
                                                   .timestamp(dto.getTimestamp())
                                                   .build();
@@ -81,9 +83,17 @@ public class MtaDescriptorPreserverService extends PersistenceService<MtaDescrip
             String mtaVersion = mtaDescriptorPreserver.getMtaVersion()
                                                       .toString();
             String spaceId = mtaDescriptorPreserver.getSpaceId();
+            String namespace = mtaDescriptorPreserver.getNamespace();
             String checksum = mtaDescriptorPreserver.getChecksum();
             LocalDateTime timestamp = mtaDescriptorPreserver.getTimestamp();
-            return new MtaDescriptorPreserverDto(id, serializeMtaDescriptor(descriptor), mtaId, mtaVersion, spaceId, checksum, timestamp);
+            return new MtaDescriptorPreserverDto(id,
+                                                 serializeMtaDescriptor(descriptor),
+                                                 mtaId,
+                                                 mtaVersion,
+                                                 spaceId,
+                                                 namespace,
+                                                 checksum,
+                                                 timestamp);
         }
 
     }

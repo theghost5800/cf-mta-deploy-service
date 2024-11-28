@@ -1,10 +1,14 @@
 package org.cloudfoundry.multiapps.controller.process.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,10 +20,19 @@ import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication.ProductizationState;
 import org.cloudfoundry.multiapps.controller.core.model.ImmutableDeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.ImmutableDeployedMtaApplication;
+import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
+import org.cloudfoundry.multiapps.controller.persistence.query.MtaDescriptorPreserverQuery;
+import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.process.steps.ProcessContext;
+import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.cloudfoundry.multiapps.mta.model.Version;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableCloudApplication;
@@ -28,6 +41,21 @@ class ApplictationsPreserveCalculatorTest {
 
     private static final String MTA_ID = "test-mta";
     private static final Version MTA_VERSION = Version.parseVersion("1.0.0");
+    private static final String SPACE_GUID = UUID.randomUUID()
+                                                 .toString();
+
+    @Mock
+    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    @Mock
+    private MtaDescriptorPreserverQuery mtaDescriptorPreserverQuery;
+    @Mock
+    private ProcessContext context;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this)
+                          .close();
+    }
 
     private static Stream<Arguments> testCalculateAppsToPreserve() {
         return Stream.of(
@@ -68,20 +96,7 @@ class ApplictationsPreserveCalculatorTest {
                          // (6) Current deployment descriptor checksum match value of preserved mta
                          Arguments.of(List.of(new TestApplication("app-1", "app-1-live", "2")),
                                       List.of(new TestApplication("app-1", "mta-preserved-app-1", "1")), "1",
-                                      List.of("app-1-live", "app-1-idle"), Collections.emptyList())
-        // (7) Current deployment descriptor checksum cannot be matched with already deployed mta
-        // Arguments.of(List.of(new TestApplication("app-1",
-        // "app-1-live",
-        // null)),
-        // Collections.emptyList(), "2", List.of("app-1-live", "app-1-idle"),
-        // List.of(ImmutableCloudApplication.builder()
-        // .name("app-1-live")
-        // .v3Metadata(Metadata.builder()
-        // .label(MtaMetadataLabels.MTA_PRESERVED_DESCRIPTOR_CHECKSUM,
-        // "2")
-        // .build())
-        // .build()))
-        );
+                                      List.of("app-1-live", "app-1-idle"), Collections.emptyList()));
     }
 
     @ParameterizedTest
@@ -89,10 +104,12 @@ class ApplictationsPreserveCalculatorTest {
     void testCalculateAppsToPreserve(List<TestApplication> deployedApplications, List<TestApplication> preservedApplications,
                                      String currentDeploymentDescriptorChecksum, List<String> appNamesToUndeploy,
                                      List<CloudApplication> expectedAppsToPreserve) {
-        DeployedMta deployedMta = geteDeployedMta(deployedApplications);
-        DeployedMta preservedMta = geteDeployedMta(preservedApplications);
+        DeployedMta deployedMta = getDeployedMta(deployedApplications);
+        DeployedMta preservedMta = getDeployedMta(preservedApplications);
 
-        ApplictationsPreserveCalculator calculator = new ApplictationsPreserveCalculator(deployedMta, preservedMta);
+        ApplicationsPreserveCalculator calculator = new ApplicationsPreserveCalculator(deployedMta,
+                                                                                       preservedMta,
+                                                                                       mtaDescriptorPreserverService);
 
         List<CloudApplication> appsToUndeploy = getAppsToUndeploy(deployedMta.getApplications(), appNamesToUndeploy);
         List<CloudApplication> appsToPreserve = calculator.calculateAppsToPreserve(appsToUndeploy, currentDeploymentDescriptorChecksum);
@@ -100,14 +117,77 @@ class ApplictationsPreserveCalculatorTest {
         assertEquals(expectedAppsToPreserve, appsToPreserve);
     }
 
-    private List<CloudApplication> getAppsToUndeploy(List<DeployedMtaApplication> deployedApplications, List<String> appNamesToUndeploy) {
-        return deployedApplications.stream()
-                                   .filter(deployedApplication -> appNamesToUndeploy.contains(deployedApplication.getName()))
-                                   .map(ImmutableCloudApplication::copyOf)
-                                   .collect(Collectors.toList());
+    private static Stream<Arguments> testCalculateAppsToUndeploy() {
+        return Stream.of(
+                         // (1) Preserved apps exist and new version will be preserved and older one needs to be deleted
+                         Arguments.of(List.of(new TestApplication("app-1", "mta-preserved-app-1", "1")), List.of("app-1-idle"), true,
+                                      List.of(ImmutableCloudApplication.builder()
+                                                                       .name("mta-preserved-app-1")
+                                                                       .v3Metadata(Metadata.builder()
+                                                                                           .label(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM,
+                                                                                                  "1")
+                                                                                           .build())
+                                                                       .build())),
+                         // (2) Preserved apps does not exist and there is no need to delete applications
+                         Arguments.of(Collections.emptyList(), List.of("special-app"), false, Collections.emptyList()),
+                         // (3) There is no specified apps to preserve and deletion will be skipped for already existing preserved apps
+                         Arguments.of(List.of(new TestApplication("app-1", "mta-preserved-app-1", "1"),
+                                              new TestApplication("app-2", "mta-preserved-app-2", "1")),
+                                      Collections.emptyList(), true, Collections.emptyList()),
+                         // (4) Preserved apps exist with same name and won't be deleted
+                         Arguments.of(List.of(new TestApplication("app-1", "mta-preserved-app-1", "1"),
+                                              new TestApplication("app-2", "mta-preserved-app-2", "1")),
+                                      List.of("mta-preserved-app-1", "mta-preserved-app-2"), true, Collections.emptyList()),
+                         // (5) Preserved apps exist but descriptor is not available in db
+                         Arguments.of(List.of(new TestApplication("app-1", "mta-preserved-app-1", "2"),
+                                              new TestApplication("app-2", "mta-preserved-app-2", "2")),
+                                      Collections.emptyList(), false, List.of(ImmutableCloudApplication.builder()
+                                                                                                       .name("mta-preserved-app-1")
+                                                                                                       .v3Metadata(Metadata.builder()
+                                                                                                                           .label(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM,
+                                                                                                                                  "2")
+                                                                                                                           .build())
+                                                                                                       .build(),
+                                                                              ImmutableCloudApplication.builder()
+                                                                                                       .name("mta-preserved-app-2")
+                                                                                                       .v3Metadata(Metadata.builder()
+                                                                                                                           .label(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM,
+                                                                                                                                  "2")
+                                                                                                                           .build())
+                                                                                                       .build())));
     }
 
-    private DeployedMta geteDeployedMta(List<TestApplication> deployedApplications) {
+    @ParameterizedTest
+    @MethodSource
+    void testCalculateAppsToUndeploy(List<TestApplication> deployedPreservedApps, List<String> appNameToPreserve,
+                                     boolean isDescriptorAvailableInDb, List<CloudApplication> expectedAppsToUndeploy) {
+        DeployedMta preservedMta = getDeployedMta(deployedPreservedApps);
+
+        when(context.getVariable(Variables.MTA_ID)).thenReturn(MTA_ID);
+        when(context.getVariable(Variables.SPACE_GUID)).thenReturn(SPACE_GUID);
+        when(mtaDescriptorPreserverService.createQuery()).thenReturn(mtaDescriptorPreserverQuery);
+        when(mtaDescriptorPreserverQuery.mtaId(anyString())).thenReturn(mtaDescriptorPreserverQuery);
+        when(mtaDescriptorPreserverQuery.spaceId(anyString())).thenReturn(mtaDescriptorPreserverQuery);
+        when(mtaDescriptorPreserverQuery.namespace(any())).thenReturn(mtaDescriptorPreserverQuery);
+        when(mtaDescriptorPreserverQuery.checksum(anyString())).thenReturn(mtaDescriptorPreserverQuery);
+        when(mtaDescriptorPreserverQuery.list()).thenReturn(isDescriptorAvailableInDb ? List.of(Mockito.mock(MtaDescriptorPreserver.class))
+            : Collections.emptyList());
+
+        ApplicationsPreserveCalculator calculator = new ApplicationsPreserveCalculator(null, preservedMta, mtaDescriptorPreserverService);
+
+        List<CloudApplication> appsToPreserve = appNameToPreserve.stream()
+                                                                 .map(appName -> ImmutableCloudApplication.builder()
+                                                                                                          .name(appName)
+                                                                                                          .build())
+                                                                 .collect(Collectors.toList());
+        List<CloudApplication> appsToUndeploy = calculator.calculateAppsToUndeploy(context, appsToPreserve)
+                                                          .stream()
+                                                          .map(appToUndeploy -> ImmutableCloudApplication.copyOf(appToUndeploy))
+                                                          .collect(Collectors.toList());
+        assertEquals(expectedAppsToUndeploy, appsToUndeploy);
+    }
+
+    private DeployedMta getDeployedMta(List<TestApplication> deployedApplications) {
         if (deployedApplications.isEmpty()) {
             return null;
         }
@@ -131,6 +211,13 @@ class ApplictationsPreserveCalculatorTest {
                                                                  .build())
 
                                    .build();
+    }
+
+    private List<CloudApplication> getAppsToUndeploy(List<DeployedMtaApplication> deployedApplications, List<String> appNamesToUndeploy) {
+        return deployedApplications.stream()
+                                   .filter(deployedApplication -> appNamesToUndeploy.contains(deployedApplication.getName()))
+                                   .map(ImmutableCloudApplication::copyOf)
+                                   .collect(Collectors.toList());
     }
 
     private static class TestApplication {
