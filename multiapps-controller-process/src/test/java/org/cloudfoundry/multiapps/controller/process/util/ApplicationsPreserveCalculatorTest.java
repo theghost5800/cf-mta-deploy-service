@@ -20,9 +20,9 @@ import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication.ProductizationState;
 import org.cloudfoundry.multiapps.controller.core.model.ImmutableDeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.ImmutableDeployedMtaApplication;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
-import org.cloudfoundry.multiapps.controller.persistence.query.MtaDescriptorPreserverQuery;
-import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptor;
+import org.cloudfoundry.multiapps.controller.persistence.query.DescriptorPreserverQuery;
+import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.process.steps.ProcessContext;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.cloudfoundry.multiapps.mta.model.Version;
@@ -37,7 +37,7 @@ import org.mockito.MockitoAnnotations;
 import com.sap.cloudfoundry.client.facade.domain.CloudApplication;
 import com.sap.cloudfoundry.client.facade.domain.ImmutableCloudApplication;
 
-class ApplictationsPreserveCalculatorTest {
+class ApplicationsPreserveCalculatorTest {
 
     private static final String MTA_ID = "test-mta";
     private static final Version MTA_VERSION = Version.parseVersion("1.0.0");
@@ -45,9 +45,9 @@ class ApplictationsPreserveCalculatorTest {
                                                  .toString();
 
     @Mock
-    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    private DescriptorPreserverService descriptorPreserverService;
     @Mock
-    private MtaDescriptorPreserverQuery mtaDescriptorPreserverQuery;
+    private DescriptorPreserverQuery descriptorPreserverQuery;
     @Mock
     private ProcessContext context;
 
@@ -109,7 +109,7 @@ class ApplictationsPreserveCalculatorTest {
 
         ApplicationsPreserveCalculator calculator = new ApplicationsPreserveCalculator(deployedMta,
                                                                                        preservedMta,
-                                                                                       mtaDescriptorPreserverService);
+                                                                                       descriptorPreserverService);
 
         List<CloudApplication> appsToUndeploy = getAppsToUndeploy(deployedMta.getApplications(), appNamesToUndeploy);
         List<CloudApplication> appsToPreserve = calculator.calculateAppsToPreserve(appsToUndeploy, currentDeploymentDescriptorChecksum);
@@ -165,15 +165,15 @@ class ApplictationsPreserveCalculatorTest {
 
         when(context.getVariable(Variables.MTA_ID)).thenReturn(MTA_ID);
         when(context.getVariable(Variables.SPACE_GUID)).thenReturn(SPACE_GUID);
-        when(mtaDescriptorPreserverService.createQuery()).thenReturn(mtaDescriptorPreserverQuery);
-        when(mtaDescriptorPreserverQuery.mtaId(anyString())).thenReturn(mtaDescriptorPreserverQuery);
-        when(mtaDescriptorPreserverQuery.spaceId(anyString())).thenReturn(mtaDescriptorPreserverQuery);
-        when(mtaDescriptorPreserverQuery.namespace(any())).thenReturn(mtaDescriptorPreserverQuery);
-        when(mtaDescriptorPreserverQuery.checksum(anyString())).thenReturn(mtaDescriptorPreserverQuery);
-        when(mtaDescriptorPreserverQuery.list()).thenReturn(isDescriptorAvailableInDb ? List.of(Mockito.mock(MtaDescriptorPreserver.class))
+        when(descriptorPreserverService.createQuery()).thenReturn(descriptorPreserverQuery);
+        when(descriptorPreserverQuery.mtaId(anyString())).thenReturn(descriptorPreserverQuery);
+        when(descriptorPreserverQuery.spaceId(anyString())).thenReturn(descriptorPreserverQuery);
+        when(descriptorPreserverQuery.namespace(any())).thenReturn(descriptorPreserverQuery);
+        when(descriptorPreserverQuery.checksum(anyString())).thenReturn(descriptorPreserverQuery);
+        when(descriptorPreserverQuery.list()).thenReturn(isDescriptorAvailableInDb ? List.of(Mockito.mock(PreservedDescriptor.class))
             : Collections.emptyList());
 
-        ApplicationsPreserveCalculator calculator = new ApplicationsPreserveCalculator(null, preservedMta, mtaDescriptorPreserverService);
+        ApplicationsPreserveCalculator calculator = new ApplicationsPreserveCalculator(null, preservedMta, descriptorPreserverService);
 
         List<CloudApplication> appsToPreserve = appNameToPreserve.stream()
                                                                  .map(appName -> ImmutableCloudApplication.builder()

@@ -33,7 +33,7 @@ import org.cloudfoundry.multiapps.controller.core.security.serialization.SecureS
 import org.cloudfoundry.multiapps.controller.core.util.CloudModelBuilderUtil;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationSubscription;
 import org.cloudfoundry.multiapps.controller.persistence.services.ConfigurationSubscriptionService;
-import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.util.ApplicationsPreserveCalculator;
 import org.cloudfoundry.multiapps.controller.process.util.ProcessTypeParser;
@@ -59,7 +59,7 @@ public class BuildCloudUndeployModelStep extends SyncFlowableStep {
     @Inject
     private ProcessTypeParser processTypeParser;
     @Inject
-    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    private DescriptorPreserverService descriptorPreserverService;
 
     @Override
     protected StepPhase executeStep(ProcessContext context) {
@@ -105,7 +105,7 @@ public class BuildCloudUndeployModelStep extends SyncFlowableStep {
         DeployedMta preservedMta = context.getVariable(Variables.PRESERVED_MTA);
         ApplicationsPreserveCalculator applicationsPreserveCalculator = new ApplicationsPreserveCalculator(deployedMta,
                                                                                                            preservedMta,
-                                                                                                           mtaDescriptorPreserverService);
+                                                                                                           descriptorPreserverService);
         List<CloudApplication> appsToPreserve = computeAppsToPreserve(context, appsToUndeploy, applicationsPreserveCalculator);
 
         List<CloudApplication> preservedAppsToUndeploy = applicationsPreserveCalculator.calculateAppsToUndeploy(context, appsToPreserve);

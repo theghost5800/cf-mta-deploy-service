@@ -71,6 +71,11 @@ public class Messages {
     public static final String ERROR_OCURRED_DURING_VALIDATION_OF_FILES_0 = "Error occurred during validation of files \"{0}\"";
     public static final String SIZE_OF_ALL_OPERATIONS_FILES_0_EXCEEDS_MAX_UPLOAD_SIZE_1 = "Size of all operation files \"{0}\" exceeds max upload size limit \"{1}\"";
     public static final String NOT_BOOLEAN_PARAMETER_VALUE = "Value \"{0}\" of parameter \"{1}\" is not boolean";
+    public static final String REVERT_OF_MTA_ID_0_CANNOT_BE_DONE_MISSING_DEPLOYED_MTA = "Revert of mta id \"{0}\" cannot be done, missing deployed/preserved mta used to be revert";
+    public static final String DESCRIPTOR_CHECKSUM_NOT_SET_IN_APPLICATION_ROLLBACK_CANNOT_BE_DONE = "Descriptor checksum is not set in the application metadata and rollback operation cannot be done";
+    public static final String REVERT_OPERATION_CANNOT_BE_DONE_PRESERVED_APPLICATIONS_HAVE_DIFFERENT_CHECKSUMS = "Revert operation cannot be done, preserved applications have different checksums!";
+    public static final String REVERT_MTA_ID_0_CANNOT_BE_DONE_MISSING_DESCRIPTOR = "Revert of mta id \"{0}\" cannot be done, missing descriptor to perform revert";
+    public static final String CHEKSUMS_OF_DESCRIPTOR_IN_PERSISTENCE_LAYER_AND_DEPLOYED_APP_NOT_MATCH = "Checksums of descriptor in persistence layer and deployed app not match and revert is not possible!";
     // Audit log messages
 
     // ERROR log messages
@@ -180,6 +185,9 @@ public class Messages {
     public static final String ERROR_WHILE_DETERMINING_SERVICE_KEYS_TO_RECREATE = "Error while determining service keys to recreate";
     public static final String ERROR_WHILE_UPDATING_SERVICE_KEYS_METADATA = "Error while updating service keys metadata";
     public static final String ERROR_WHILE_POLLING_SERVICE_KEY_OPERATION_0 = "Error while polling service key operation \"{0}\"";
+    public static final String ERROR_WHILE_PRESERVE_APPLICATION = "Error while preserve applcation \"{0}\"";
+    public static final String ERROR_DURING_PREPARATION_PRESERVED_MTA = "Error during preparation preserved mta for deployment";
+    public static final String ERROR_DURING_REMOVAL_MTA_PRESREVED_METADATA = "Error during removal of mta preserved metadata";
 
     // WARN log messages
     public static final String CANNOT_RETRIEVE_SERVICE_INSTANCE_OF_OPTIONAL_SERVICE = "Cannot retrieve service instance of optional service \"{0}\"";
@@ -304,6 +312,8 @@ public class Messages {
     public static final String CLOSING_LAST_STREAM_FOR_PART_0 = "Closing the last stream, part: {0}";
     public static final String SCALING_UP_OLD_APPLICATION = "Scaling up old application: \"{0}\" to {1} instances";
     public static final String FILE_WITH_ID_0_WAS_DELETED = "File with id \"{0}\" was deleted";
+    public static final String DELETING_PRESERVED_DESCRIPTOR_WITH_MTA_ID_0_SPACE_1_NAMESPACE_2_AND_CHECKSUM_3 = "Deleting preserved descriptor with mta id \"{0}\" in space \"{1}\" namespace \"{2}\" and the following checksum \"{3}\"";
+    public static final String DELETING_PRESERVED_DESCRIPTORS_WITH_MTA_ID_0_SPACE_1_NAMESPACE_2_AND_SKIP_CHECKSUMS_3 = "Deleting preserved descriptors with mta id \"{0}\" in space \"{1}\" namespace \"{2}\" and skip the following checksums \"{3}\"";
 
     // Progress messages
     public static final String OPERATION_ID = "Operation ID: {0}";
@@ -374,6 +384,10 @@ public class Messages {
     public static final String LIVE_APPLICATION_NOT_DETECTED_DURING_ROLLING_INSTANCE_UPDATE = "Live application not detected during rolling instance update";
     public static final String NO_DEPLOYED_MTA_DETECTED_DURING_ROLLING_INSTANCE_UPDATE = "No deployed MTA detected during rolling instance update";
     public static final String THE_REQUIRED_APPLICATION_NOT_FOUND_IN_THE_DETECTED_MTA = "The required application not found in the detected MTA";
+    public static final String RENAMING_APPLICATION_0_TO_1_TO_BE_USED_FOR_ROLLBACK = "Renaming application \"{0}\" to \"{1}\" to be used for rollback";
+    public static final String PREPARE_TO_REVERT_MTA = "Prepare to revert mta \"{0}\"";
+    public static final String RENAME_CURRENTLY_DEPLOYED_APPLICATION_0_TO_1 = "Rename currently deployed application \"{0}\" to \"{1}\"";
+    public static final String RENAME_PRESERVED_APPLICATION_0_TO_1 = "Rename preserved application \"{0}\" to \"{1}\"";
 
     // DEBUG log messages
     public static final String ENTERING_TESTING_PHASE = "Entering testing phase";
@@ -730,6 +744,13 @@ public class Messages {
     public static final String DOWNSCALING_APPLICATION_0_TO_1_INSTANCES = "Downscaling application \"{0}\" to {1} instances";
     public static final String UPSCALING_APPLICATION_0_TO_1_INSTANCES = "Upscaling application \"{0}\" to {1} instances";
     public static final String PARAMETER_0_MUST_BE_POSITIVE_WITH_MAX_VALUE_1 = "Parameter \"{0}\" must be positive integer value up to {1}!";
+    public static final String DETECTING_PRESERVED_MTA_BY_ID_AND_NAMESPACE = "Detecting preserved mta by id \"{0}\" and namespace \"{1}\"";
+    public static final String DETECTED_PRESERVED_MTA = "Detected preserved mta: {0}";
+    public static final String DELETING_METADATA_OF_PRESERVED_MTA_APPLICATIONS = "Deleting metadata of preserved mta applications";
+    public static final String REMOVE_MTA_PRESERVED_METADATA_FOR_APPLICATION_0 = "Remove mta preserved metadata for application \"{0}\"";
+    public static final String RENAME_APPLICATION_FOR_REVERT = "Rename applications for revert";
+    public static final String DELETING_PRESERVED_DESCRIPTORS_STORED_BEFORE_0 = "Deleting preserved descriptors stored before \"{0}\"";
+    public static final String DELETED_PRESERVED_DESCRIPTORS_0 = "Deleted preserved descriptors: {0}";
 
     // Not log messages
     public static final String SERVICE_TYPE = "{0}/{1}";

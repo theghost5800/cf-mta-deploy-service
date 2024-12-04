@@ -96,7 +96,7 @@
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${(iteratedModulesInParallel.size() == modulesToDeploy.size())}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="sid-328E2DBA-6E3C-4E49-B008-C98195C31D1D" sourceRef="sid-F76FD5B9-E730-4700-BB17-7EFB10A6C7F6" targetRef="processBatchesSequentially">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${(shouldProcessServices == true)}]]></conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${(processUserProvidedServices == true)}]]></conditionExpression>
     </sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_revert-deploy">

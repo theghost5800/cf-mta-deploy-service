@@ -78,7 +78,7 @@ public class DetectDeployedMtaStep extends SyncFlowableStep {
     }
 
     private void detectPreservedMta(String mtaId, String mtaNamespace, CloudControllerClient client, ProcessContext context) {
-        getStepLogger().debug("Detecting preserved mta by id \"{0}\" and namespace \"{1}\"", mtaId, mtaNamespace);
+        getStepLogger().debug(Messages.DETECTING_PRESERVED_MTA_BY_ID_AND_NAMESPACE, mtaId, mtaNamespace);
         Optional<DeployedMta> optionalPreservedMta = deployedMtaDetector.detectDeployedMtaByNameAndNamespace(mtaId,
                                                                                                              NameUtil.computeUserNamespaceWithSystemNamespace(Constants.MTA_PRESERVED_NAMESPACE,
                                                                                                                                                               mtaNamespace),
@@ -91,7 +91,7 @@ public class DetectDeployedMtaStep extends SyncFlowableStep {
 
         DeployedMta preservedMta = optionalPreservedMta.get();
         context.setVariable(Variables.PRESERVED_MTA, preservedMta);
-        getStepLogger().debug("Detected preserved mta: {0}", SecureSerialization.toJson(preservedMta));
+        getStepLogger().debug(Messages.DETECTED_PRESERVED_MTA, SecureSerialization.toJson(preservedMta));
     }
 
     private List<DeployedMtaServiceKey> detectDeployedServiceKeys(String mtaId, String mtaNamespace, DeployedMta deployedMta,

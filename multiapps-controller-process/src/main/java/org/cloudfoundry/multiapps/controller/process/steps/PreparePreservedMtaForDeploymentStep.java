@@ -14,10 +14,11 @@ import org.cloudfoundry.multiapps.controller.core.cf.metadata.MtaMetadataLabels;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
 import org.cloudfoundry.multiapps.controller.core.util.NameUtil;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
-import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptor;
+import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.persistence.services.OperationService;
 import org.cloudfoundry.multiapps.controller.process.Constants;
+import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.util.ProcessConflictPreventer;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.cloudfoundry.multiapps.mta.model.Module;
@@ -30,22 +31,22 @@ import com.sap.cloudfoundry.client.facade.CloudControllerClient;
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
 
-    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    private DescriptorPreserverService descriptorPreserverService;
     private DeployedMtaDetector deployedMtaDetector;
     private OperationService operationService;
     private Function<OperationService, ProcessConflictPreventer> conflictPreventerSupplier = ProcessConflictPreventer::new;
 
     @Inject
-    public PreparePreservedMtaForDeploymentStep(MtaDescriptorPreserverService mtaDescriptorPreserverService,
+    public PreparePreservedMtaForDeploymentStep(DescriptorPreserverService descriptorPreserverService,
                                                 DeployedMtaDetector deployedMtaDetector, OperationService operationService) {
-        this.mtaDescriptorPreserverService = mtaDescriptorPreserverService;
+        this.descriptorPreserverService = descriptorPreserverService;
         this.deployedMtaDetector = deployedMtaDetector;
         this.operationService = operationService;
     }
 
     @Override
     protected StepPhase executeStep(ProcessContext context) throws Exception {
-        getStepLogger().info("Prepare to revert mta \"{0}\"", context.getVariable(Variables.MTA_ID));
+        getStepLogger().info(Messages.PREPARE_TO_REVERT_MTA, context.getVariable(Variables.MTA_ID));
 
         CloudControllerClient client = context.getControllerClient();
         String spaceGuid = context.getVariable(Variables.SPACE_GUID);
@@ -62,49 +63,11 @@ public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
 
         Optional<DeployedMta> deployedMtaOptional = deployedMtaDetector.detectDeployedMtaByNameAndNamespace(mtaId, mtaNamespace, client);
         if (preservedMtaOptional.isEmpty() || deployedMtaOptional.isEmpty()) {
-            throw new ContentException("Revert of mta id \"{0}\" cannot be done due to missing deployed/preserved mta used to be revert",
-                                       mtaId);
+            throw new ContentException(Messages.REVERT_OF_MTA_ID_0_CANNOT_BE_DONE_MISSING_DEPLOYED_MTA, mtaId);
         }
         DeployedMta preservedMta = preservedMtaOptional.get();
-        String descriptorChecksumOfPreservedMta = preservedMta.getApplications()
-                                                              .get(0)
-                                                              .getV3Metadata()
-                                                              .getLabels()
-                                                              .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM);
 
-        if (descriptorChecksumOfPreservedMta == null) {
-            throw new ContentException("Descriptor checksum is not set in the application metadata and rollback operation cannot be done");
-        }
-
-        if (!preservedMta.getApplications()
-                         .stream()
-                         .allMatch(application -> descriptorChecksumOfPreservedMta.equals(application.getV3Metadata()
-                                                                                                     .getLabels()
-                                                                                                     .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM)))) {
-            throw new ContentException("Revert operation cannot be done due to preserved applications with different checksums!");
-        }
-
-        MtaDescriptorPreserver preservedDescriptor = null;
-        try {
-            preservedDescriptor = mtaDescriptorPreserverService.createQuery()
-                                                               .mtaId(mtaId)
-                                                               .spaceId(spaceGuid)
-                                                               .namespace(mtaNamespace)
-                                                               .checksum(descriptorChecksumOfPreservedMta)
-                                                               .singleResult();
-        } catch (NoResultException e) {
-            throw new ContentException("Revert of mta id \"{0}\" cannot be done due to missing descriptor used to perform revert", mtaId);
-        }
-
-        for (DeployedMtaApplication deployedApplication : preservedMta.getApplications()) {
-            String applicationChecksum = deployedApplication.getV3Metadata()
-                                                            .getLabels()
-                                                            .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM);
-            if (applicationChecksum == null && !preservedDescriptor.getChecksum()
-                                                                   .equals(applicationChecksum)) {
-                throw new ContentException("Checksums between descriptor in persistence layer and deployed app not match and revert is not possible!");
-            }
-        }
+        PreservedDescriptor preservedDescriptor = getPreservedDescriptor(preservedMta, mtaId, spaceGuid, mtaNamespace);
 
         context.setVariable(Variables.DEPLOYMENT_DESCRIPTOR, preservedDescriptor.getDescriptor());
         context.setVariable(Variables.MTA_MAJOR_SCHEMA_VERSION, preservedDescriptor.getDescriptor()
@@ -126,9 +89,56 @@ public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
                                               context.getVariable(Variables.CORRELATION_ID));
     }
 
+    private PreservedDescriptor getPreservedDescriptor(DeployedMta preservedMta, String mtaId, String spaceGuid, String mtaNamespace) {
+        String descriptorChecksumOfPreservedMta = preservedMta.getApplications()
+                                                              .get(0)
+                                                              .getV3Metadata()
+                                                              .getLabels()
+                                                              .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM);
+
+        if (descriptorChecksumOfPreservedMta == null) {
+            throw new ContentException(Messages.DESCRIPTOR_CHECKSUM_NOT_SET_IN_APPLICATION_ROLLBACK_CANNOT_BE_DONE);
+        }
+
+        if (!doesAllDeployedAppsChecksumMatch(preservedMta, descriptorChecksumOfPreservedMta)) {
+            throw new ContentException(Messages.REVERT_OPERATION_CANNOT_BE_DONE_PRESERVED_APPLICATIONS_HAVE_DIFFERENT_CHECKSUMS);
+        }
+
+        PreservedDescriptor preservedDescriptor = null;
+        try {
+            preservedDescriptor = descriptorPreserverService.createQuery()
+                                                            .mtaId(mtaId)
+                                                            .spaceId(spaceGuid)
+                                                            .namespace(mtaNamespace)
+                                                            .checksum(descriptorChecksumOfPreservedMta)
+                                                            .singleResult();
+        } catch (NoResultException e) {
+            throw new ContentException(Messages.REVERT_MTA_ID_0_CANNOT_BE_DONE_MISSING_DESCRIPTOR, mtaId);
+        }
+
+        for (DeployedMtaApplication deployedApplication : preservedMta.getApplications()) {
+            String applicationChecksum = deployedApplication.getV3Metadata()
+                                                            .getLabels()
+                                                            .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM);
+            if (applicationChecksum == null && !preservedDescriptor.getChecksum()
+                                                                   .equals(applicationChecksum)) {
+                throw new ContentException(Messages.CHEKSUMS_OF_DESCRIPTOR_IN_PERSISTENCE_LAYER_AND_DEPLOYED_APP_NOT_MATCH);
+            }
+        }
+        return preservedDescriptor;
+    }
+
+    private boolean doesAllDeployedAppsChecksumMatch(DeployedMta preservedMta, String descriptorChecksumOfPreservedMta) {
+        return preservedMta.getApplications()
+                           .stream()
+                           .allMatch(application -> descriptorChecksumOfPreservedMta.equals(application.getV3Metadata()
+                                                                                                       .getLabels()
+                                                                                                       .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM)));
+    }
+
     @Override
     protected String getStepErrorMessage(ProcessContext context) {
-        return "Error during preparation preserved mta for deployment";
+        return Messages.ERROR_DURING_PREPARATION_PRESERVED_MTA;
     }
 
 }

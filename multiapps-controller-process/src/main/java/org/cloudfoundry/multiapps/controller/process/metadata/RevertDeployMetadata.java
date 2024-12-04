@@ -67,14 +67,8 @@ public class RevertDeployMetadata {
                                                                                  .customConverter(new TimeoutParameterConverter(Variables.APPS_TASK_EXECUTION_TIMEOUT_PROCESS_VARIABLE))
                                                                                  .build())
                                          .addParameter(ImmutableParameterMetadata.builder()
-                                                                                 .id(Variables.SHOULD_PROCESS_SERVICES.getName())
+                                                                                 .id(Variables.PROCESS_USER_PROVIDED_SERVICES.getName())
                                                                                  .type(ParameterType.BOOLEAN)
-                                                                                 .defaultValue(false)
-                                                                                 .build())
-                                         .addParameter(ImmutableParameterMetadata.builder()
-                                                                                 .id(Variables.PROCESS_USER_PROVIDED_SERVICES_DURING_REVERT.getName())
-                                                                                 .type(ParameterType.BOOLEAN)
-                                                                                 .defaultValue(true)
                                                                                  .build())
                                          .build();
     }

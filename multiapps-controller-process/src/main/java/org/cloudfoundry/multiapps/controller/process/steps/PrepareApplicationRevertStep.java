@@ -11,6 +11,7 @@ import org.cloudfoundry.multiapps.controller.core.cf.metadata.util.MtaMetadataUt
 import org.cloudfoundry.multiapps.controller.core.model.BlueGreenApplicationNameSuffix;
 import org.cloudfoundry.multiapps.controller.core.util.NameUtil;
 import org.cloudfoundry.multiapps.controller.process.Constants;
+import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -33,7 +34,7 @@ public class PrepareApplicationRevertStep extends SyncFlowableStep {
         String newApplicationName = BlueGreenApplicationNameSuffix.removeSuffix(cloudApplication.getName());
         newApplicationName = NameUtil.computeValidApplicationName(newApplicationName, Constants.MTA_PRESERVED_NAMESPACE, true);
 
-        getStepLogger().info("Renaming application \"{0}\" to \"{1}\" to be used for future revert");
+        getStepLogger().info(Messages.RENAMING_APPLICATION_0_TO_1_TO_BE_USED_FOR_ROLLBACK, cloudApplication.getName(), newApplicationName);
         client.rename(cloudApplication.getName(), newApplicationName);
         String hashedMtaNamespace = MtaMetadataUtil.getHashedLabel(mtaUserNamespaceWithSystemNamespace);
         client.updateApplicationMetadata(cloudApplication.getGuid(), Metadata.builder()
@@ -48,8 +49,8 @@ public class PrepareApplicationRevertStep extends SyncFlowableStep {
 
     @Override
     protected String getStepErrorMessage(ProcessContext context) {
-        return MessageFormat.format("Error while preserve old applcation \"{0}\"", context.getVariable(Variables.APP_TO_PROCESS)
-                                                                                          .getName());
+        return MessageFormat.format(Messages.ERROR_WHILE_PRESERVE_APPLICATION, context.getVariable(Variables.APP_TO_PROCESS)
+                                                                                      .getName());
     }
 
 }

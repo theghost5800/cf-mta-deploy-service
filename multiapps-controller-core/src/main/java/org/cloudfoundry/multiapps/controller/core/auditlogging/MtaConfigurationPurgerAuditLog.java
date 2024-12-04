@@ -10,7 +10,7 @@ import org.cloudfoundry.multiapps.controller.api.model.Operation;
 import org.cloudfoundry.multiapps.controller.core.Messages;
 import org.cloudfoundry.multiapps.controller.core.auditlogging.model.AuditLogConfiguration;
 import org.cloudfoundry.multiapps.controller.core.auditlogging.model.ConfigurationChangeActions;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptor;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationEntry;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationSubscription;
 
@@ -87,7 +87,7 @@ public class MtaConfigurationPurgerAuditLog {
                                                           ConfigurationChangeActions.CONFIGURATION_DELETE);
     }
 
-    public void logDeleteMtaPreservedDescriptor(String spaceGuid, MtaDescriptorPreserver mtaDescriptorPreserver) {
+    public void logDeleteMtaPreservedDescriptor(String spaceGuid, PreservedDescriptor mtaDescriptorPreserver) {
         String performedAction = MessageFormat.format(Messages.DELETE_PRESERVED_DESCRIPTOR_AUDIT_LOG_MESSAGE, spaceGuid);
         auditLoggingFacade.logConfigurationChangeAuditLog(new AuditLogConfiguration(Strings.EMPTY,
                                                                                     spaceGuid,
@@ -137,7 +137,7 @@ public class MtaConfigurationPurgerAuditLog {
         return identifiers;
     }
 
-    private Map<String, String> createAuditLogDeleteMtaPreservedDescriptorIdentifier(MtaDescriptorPreserver mtaDescriptorPreserver) {
+    private Map<String, String> createAuditLogDeleteMtaPreservedDescriptorIdentifier(PreservedDescriptor mtaDescriptorPreserver) {
         Map<String, String> identifiers = new HashMap<>();
 
         identifiers.put(MTA_ID_PROPERTY_NAME, mtaDescriptorPreserver.getMtaId());

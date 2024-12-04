@@ -16,9 +16,9 @@ import org.cloudfoundry.multiapps.controller.persistence.model.PersistenceMetada
 import org.cloudfoundry.multiapps.controller.persistence.model.PersistenceMetadata.TableNames;
 
 @Entity
-@Table(name = TableNames.MTA_DESCRIPTOR_PRESERVER_TABLE)
-@SequenceGenerator(name = SequenceNames.MTA_DESCRIPTOR_PRESERVER_SEQUENCE, sequenceName = SequenceNames.MTA_DESCRIPTOR_PRESERVER_SEQUENCE, allocationSize = 1)
-public class MtaDescriptorPreserverDto implements DtoWithPrimaryKey<Long> {
+@Table(name = TableNames.PRESERVED_DESCRIPTOR_TABLE)
+@SequenceGenerator(name = SequenceNames.DESCRIPTOR_PRESERVER_SEQUENCE, sequenceName = SequenceNames.DESCRIPTOR_PRESERVER_SEQUENCE, allocationSize = 1)
+public class PreservedDescriptorDto implements DtoWithPrimaryKey<Long> {
 
     public static class AttributeNames {
         private AttributeNames() {
@@ -33,37 +33,37 @@ public class MtaDescriptorPreserverDto implements DtoWithPrimaryKey<Long> {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.MTA_DESCRIPTOR_PRESERVER_SEQUENCE)
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_ID)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.DESCRIPTOR_PRESERVER_SEQUENCE)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_ID)
     private long id;
 
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_DESCRIPTOR, nullable = false)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_DESCRIPTOR, nullable = false)
     @Lob
     private byte[] descriptor;
 
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_MTA_ID, nullable = false)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_MTA_ID, nullable = false)
     private String mtaId;
 
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_MTA_VERSION, nullable = false)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_MTA_VERSION, nullable = false)
     private String mtaVersion;
 
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_SPACE_ID, nullable = false)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_SPACE_ID, nullable = false)
     private String spaceId;
 
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_NAMESPACE, nullable = true)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_NAMESPACE, nullable = true)
     private String namespace;
 
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_CHECKSUM, nullable = false)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_CHECKSUM, nullable = false)
     private String checksum;
 
-    @Column(name = TableColumnNames.MTA_DESCRIPTOR_PRESERVER_TIMESTAMP, nullable = false)
+    @Column(name = TableColumnNames.PRESERVED_DESCRIPTOR_TIMESTAMP, nullable = false)
     private LocalDateTime timestamp;
 
-    protected MtaDescriptorPreserverDto() {
+    protected PreservedDescriptorDto() {
         // Required by JPA
     }
 
-    public MtaDescriptorPreserverDto(long id, byte[] descriptor, String mtaId, String mtaVersion, String spaceId, String namespace,
+    public PreservedDescriptorDto(long id, byte[] descriptor, String mtaId, String mtaVersion, String spaceId, String namespace,
                                      String checksum, LocalDateTime timestamp) {
         this.id = id;
         this.descriptor = descriptor;

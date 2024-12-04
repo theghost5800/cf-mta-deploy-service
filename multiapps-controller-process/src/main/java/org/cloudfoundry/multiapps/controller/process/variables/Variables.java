@@ -844,13 +844,8 @@ public interface Variables {
                                                                      .type(Variable.typeReference(DeployedMta.class))
                                                                      .build();
 
-    Variable<Boolean> SHOULD_PROCESS_SERVICES = ImmutableSimpleVariable.<Boolean> builder()
-                                                                       .name("shouldProcessServices")
-                                                                       .defaultValue(false)
-                                                                       .build();
-
-    Variable<Boolean> PROCESS_USER_PROVIDED_SERVICES_DURING_REVERT = ImmutableSimpleVariable.<Boolean> builder()
-                                                                                            .name("processUserProvidedServicesDuringRevert")
-                                                                                            .defaultValue(false)
-                                                                                            .build();
+    Variable<Boolean> PROCESS_USER_PROVIDED_SERVICES = ImmutableSimpleVariable.<Boolean> builder()
+                                                                              .name("processUserProvidedServices")
+                                                                              .defaultValue(false)
+                                                                              .build();
 }

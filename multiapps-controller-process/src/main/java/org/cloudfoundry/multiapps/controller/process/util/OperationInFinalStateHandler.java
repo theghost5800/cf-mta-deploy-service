@@ -25,10 +25,10 @@ import org.cloudfoundry.multiapps.controller.core.util.LoggingUtil;
 import org.cloudfoundry.multiapps.controller.core.util.SafeExecutor;
 import org.cloudfoundry.multiapps.controller.persistence.model.HistoricOperationEvent;
 import org.cloudfoundry.multiapps.controller.persistence.model.ImmutableHistoricOperationEvent;
+import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.persistence.services.FileService;
 import org.cloudfoundry.multiapps.controller.persistence.services.FileStorageException;
 import org.cloudfoundry.multiapps.controller.persistence.services.HistoricOperationEventService;
-import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.persistence.services.OperationService;
 import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.dynatrace.DynatraceProcessDuration;
@@ -57,7 +57,7 @@ public class OperationInFinalStateHandler {
     @Inject
     private HistoricOperationEventService historicOperationEventService;
     @Inject
-    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    private DescriptorPreserverService descriptorPreserverService;
     @Inject
     private OperationTimeAggregator operationTimeAggregator;
     @Inject
@@ -143,14 +143,14 @@ public class OperationInFinalStateHandler {
             Optional<String> mtaChecksum = getChecksumOfDeployedApplication(deployedMta);
 
             if (mtaChecksum.isPresent()) {
-                LOGGER.info(MessageFormat.format("Deleting preserved descriptor with mta id \"{0}\" in space \"{1}\" namespace \"{2}\" and the following checksum \"{3}\"",
+                LOGGER.info(MessageFormat.format(Messages.DELETING_PRESERVED_DESCRIPTOR_WITH_MTA_ID_0_SPACE_1_NAMESPACE_2_AND_CHECKSUM_3,
                                                  mtaId, spaceId, mtaNamespace, mtaChecksum.get()));
-                mtaDescriptorPreserverService.createQuery()
-                                             .mtaId(mtaId)
-                                             .spaceId(spaceId)
-                                             .namespace(mtaNamespace)
-                                             .checksum(mtaChecksum.get())
-                                             .delete();
+                descriptorPreserverService.createQuery()
+                                          .mtaId(mtaId)
+                                          .spaceId(spaceId)
+                                          .namespace(mtaNamespace)
+                                          .checksum(mtaChecksum.get())
+                                          .delete();
             }
             return;
         }
@@ -170,14 +170,14 @@ public class OperationInFinalStateHandler {
             return;
         }
 
-        LOGGER.info(MessageFormat.format("Deleting preserved descriptors with mta id \"{0}\" in space \"{1}\" namespace \"{2}\" and skip the following checksums \"{3}\"",
+        LOGGER.info(MessageFormat.format(Messages.DELETING_PRESERVED_DESCRIPTORS_WITH_MTA_ID_0_SPACE_1_NAMESPACE_2_AND_SKIP_CHECKSUMS_3,
                                          mtaId, spaceId, mtaNamespace, checksumsToSkipDeletion));
-        mtaDescriptorPreserverService.createQuery()
-                                     .mtaId(mtaId)
-                                     .spaceId(spaceId)
-                                     .namespace(mtaNamespace)
-                                     .checksumsNotMatch(checksumsToSkipDeletion)
-                                     .delete();
+        descriptorPreserverService.createQuery()
+                                  .mtaId(mtaId)
+                                  .spaceId(spaceId)
+                                  .namespace(mtaNamespace)
+                                  .checksumsNotMatch(checksumsToSkipDeletion)
+                                  .delete();
 
     }
 

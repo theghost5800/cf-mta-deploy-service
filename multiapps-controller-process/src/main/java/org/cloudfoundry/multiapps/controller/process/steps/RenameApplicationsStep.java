@@ -160,18 +160,19 @@ public class RenameApplicationsStep extends SyncFlowableStep {
 
         @Override
         public void execute(ProcessContext context) {
-            getStepLogger().debug("Rename applications for revert");
+            getStepLogger().debug(Messages.RENAME_APPLICATION_FOR_REVERT);
             DeployedMta deployedMta = context.getVariable(Variables.DEPLOYED_MTA);
             DeployedMta preservedMta = context.getVariable(Variables.PRESERVED_MTA);
             CloudControllerClient client = context.getControllerClient();
 
             List<DeployedMtaApplication> deployedMtaApplications = new ArrayList<>();
             for (DeployedMtaApplication deployedMtaApplication : deployedMta.getApplications()) {
-                String activeApplicationName = deployedMtaApplication.getName();
-                String toBeDeletedApplicationName = NameUtil.computeValidApplicationName(activeApplicationName, "to-be-deleted", true);
-                getStepLogger().info("Rename current active application \"{0}\" to \"{1}\"", activeApplicationName,
+                String deployedApplicationName = deployedMtaApplication.getName();
+                String toBeDeletedApplicationName = NameUtil.computeValidApplicationName(deployedApplicationName,
+                                                                                         Constants.MTA_FOR_DELETION_PREFIX, true);
+                getStepLogger().info(Messages.RENAME_CURRENTLY_DEPLOYED_APPLICATION_0_TO_1, deployedApplicationName,
                                      toBeDeletedApplicationName);
-                client.rename(activeApplicationName, toBeDeletedApplicationName);
+                client.rename(deployedApplicationName, toBeDeletedApplicationName);
                 deployedMtaApplications.add(ImmutableDeployedMtaApplication.copyOf(deployedMtaApplication)
                                                                            .withName(toBeDeletedApplicationName));
             }
@@ -181,7 +182,7 @@ public class RenameApplicationsStep extends SyncFlowableStep {
                 String preservedApplicationName = preservedMtaApplication.getName();
                 String applicationNameWithoutMtaPreservedNamespace = preservedApplicationName.substring(NameUtil.getNamespacePrefix(Constants.MTA_PRESERVED_NAMESPACE)
                                                                                                                 .length());
-                getStepLogger().info("Rename preserved application \"{0}\" to \"{1}\"", preservedApplicationName,
+                getStepLogger().info(Messages.RENAME_PRESERVED_APPLICATION_0_TO_1, preservedApplicationName,
                                      applicationNameWithoutMtaPreservedNamespace);
                 client.rename(preservedApplicationName, applicationNameWithoutMtaPreservedNamespace);
                 preservedMtaApplications.add(ImmutableDeployedMtaApplication.copyOf(preservedMtaApplication)

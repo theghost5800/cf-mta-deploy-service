@@ -20,14 +20,14 @@ import org.cloudfoundry.multiapps.controller.core.cf.clients.WebClientFactory;
 import org.cloudfoundry.multiapps.controller.core.util.ApplicationConfiguration;
 import org.cloudfoundry.multiapps.controller.core.util.SafeExecutor;
 import org.cloudfoundry.multiapps.controller.core.util.SecurityUtil;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptor;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationEntry;
 import org.cloudfoundry.multiapps.controller.persistence.model.ConfigurationSubscription;
 import org.cloudfoundry.multiapps.controller.persistence.services.ConfigurationEntryService;
 import org.cloudfoundry.multiapps.controller.persistence.services.ConfigurationSubscriptionService;
 import org.cloudfoundry.multiapps.controller.persistence.services.FileService;
 import org.cloudfoundry.multiapps.controller.persistence.services.FileStorageException;
-import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.persistence.services.OperationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class DataTerminationService {
     @Inject
     private MtaConfigurationPurgerAuditLog mtaConfigurationPurgerAuditLog;
     @Inject
-    private MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    private DescriptorPreserverService mtaDescriptorPreserverService;
 
     private static void log(Exception e) {
         LOGGER.error(format(Messages.ERROR_DURING_DATA_TERMINATION_0, e.getMessage()), e);
@@ -147,7 +147,7 @@ public class DataTerminationService {
     }
 
     private void deletedMtaDescriptorsOrphanData(String spaceId) {
-        List<MtaDescriptorPreserver> preservedDescriptors = mtaDescriptorPreserverService.createQuery()
+        List<PreservedDescriptor> preservedDescriptors = mtaDescriptorPreserverService.createQuery()
                                                                                          .spaceId(spaceId)
                                                                                          .list();
         preservedDescriptors.forEach(descriptor -> mtaConfigurationPurgerAuditLog.logDeleteMtaPreservedDescriptor(spaceId, descriptor));

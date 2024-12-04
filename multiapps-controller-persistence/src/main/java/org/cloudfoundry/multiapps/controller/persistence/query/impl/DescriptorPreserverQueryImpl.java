@@ -8,27 +8,27 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverDto;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserverDto.AttributeNames;
-import org.cloudfoundry.multiapps.controller.persistence.query.MtaDescriptorPreserverQuery;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptor;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptorDto;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptorDto.AttributeNames;
+import org.cloudfoundry.multiapps.controller.persistence.query.DescriptorPreserverQuery;
 import org.cloudfoundry.multiapps.controller.persistence.query.criteria.ImmutableQueryAttributeRestriction;
 import org.cloudfoundry.multiapps.controller.persistence.query.criteria.QueryCriteria;
-import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService.MtaDescriptorPreserverMapper;
+import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService.DescriptorPreserverMapper;
 
-public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescriptorPreserver, MtaDescriptorPreserverQuery>
-    implements MtaDescriptorPreserverQuery {
+public class DescriptorPreserverQueryImpl extends AbstractQueryImpl<PreservedDescriptor, DescriptorPreserverQuery>
+    implements DescriptorPreserverQuery {
 
     private final QueryCriteria queryCriteria = new QueryCriteria();
-    private final MtaDescriptorPreserverMapper mtaDescriptorPreserverMapper;
+    private final DescriptorPreserverMapper descriptorPreserverMapper;
 
-    public MtaDescriptorPreserverQueryImpl(EntityManager entityManager, MtaDescriptorPreserverMapper mtaDescriptorPreserverMapper) {
+    public DescriptorPreserverQueryImpl(EntityManager entityManager, DescriptorPreserverMapper descriptorPreserverMapper) {
         super(entityManager);
-        this.mtaDescriptorPreserverMapper = mtaDescriptorPreserverMapper;
+        this.descriptorPreserverMapper = descriptorPreserverMapper;
     }
 
     @Override
-    public MtaDescriptorPreserverQuery id(Long id) {
+    public DescriptorPreserverQuery id(Long id) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.ID)
                                                                        .condition(getCriteriaBuilder()::equal)
@@ -38,7 +38,7 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserverQuery mtaId(String mtaId) {
+    public DescriptorPreserverQuery mtaId(String mtaId) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.MTA_ID)
                                                                        .condition(getCriteriaBuilder()::equal)
@@ -48,7 +48,7 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserverQuery spaceId(String spaceId) {
+    public DescriptorPreserverQuery spaceId(String spaceId) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.SPACE_ID)
                                                                        .condition(getCriteriaBuilder()::equal)
@@ -58,7 +58,7 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserverQuery namespace(String namespace) {
+    public DescriptorPreserverQuery namespace(String namespace) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.NAMESPACE)
                                                                        .condition(getCriteriaBuilder()::equal)
@@ -68,7 +68,7 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserverQuery checksum(String checksum) {
+    public DescriptorPreserverQuery checksum(String checksum) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.CHECKSUM)
                                                                        .condition(getCriteriaBuilder()::equal)
@@ -78,7 +78,7 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserverQuery checksumsNotMatch(List<String> checksums) {
+    public DescriptorPreserverQuery checksumsNotMatch(List<String> checksums) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.builder()
                                                                        .attribute(AttributeNames.CHECKSUM)
                                                                        .condition((expression, value) -> expression.in(checksums)
@@ -89,7 +89,7 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserverQuery olderThan(LocalDateTime time) {
+    public DescriptorPreserverQuery olderThan(LocalDateTime time) {
         queryCriteria.addRestriction(ImmutableQueryAttributeRestriction.<LocalDateTime> builder()
                                                                        .attribute(AttributeNames.TIMESTAMP)
                                                                        .condition(getCriteriaBuilder()::lessThan)
@@ -99,25 +99,25 @@ public class MtaDescriptorPreserverQueryImpl extends AbstractQueryImpl<MtaDescri
     }
 
     @Override
-    public MtaDescriptorPreserver singleResult() throws NoResultException, NonUniqueResultException {
-        MtaDescriptorPreserverDto dto = executeInTransaction(manager -> createQuery(manager, queryCriteria,
-                                                                                    MtaDescriptorPreserverDto.class).getSingleResult());
-        return mtaDescriptorPreserverMapper.fromDto(dto);
+    public PreservedDescriptor singleResult() throws NoResultException, NonUniqueResultException {
+        PreservedDescriptorDto dto = executeInTransaction(manager -> createQuery(manager, queryCriteria,
+                                                                                 PreservedDescriptorDto.class).getSingleResult());
+        return descriptorPreserverMapper.fromDto(dto);
     }
 
     @Override
-    public List<MtaDescriptorPreserver> list() {
-        List<MtaDescriptorPreserverDto> dtos = executeInTransaction(manager -> createQuery(manager, queryCriteria,
-                                                                                           MtaDescriptorPreserverDto.class).getResultList());
+    public List<PreservedDescriptor> list() {
+        List<PreservedDescriptorDto> dtos = executeInTransaction(manager -> createQuery(manager, queryCriteria,
+                                                                                        PreservedDescriptorDto.class).getResultList());
 
         return dtos.stream()
-                   .map(mtaDescriptorPreserverMapper::fromDto)
+                   .map(descriptorPreserverMapper::fromDto)
                    .collect(Collectors.toList());
     }
 
     @Override
     public int delete() {
-        return executeInTransaction(manager -> createDeleteQuery(manager, queryCriteria, MtaDescriptorPreserverDto.class).executeUpdate());
+        return executeInTransaction(manager -> createDeleteQuery(manager, queryCriteria, PreservedDescriptorDto.class).executeUpdate());
     }
 
 }

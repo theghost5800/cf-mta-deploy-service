@@ -11,8 +11,8 @@ import org.cloudfoundry.multiapps.controller.core.cf.metadata.MtaMetadataLabels;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication.ProductizationState;
-import org.cloudfoundry.multiapps.controller.persistence.dto.MtaDescriptorPreserver;
-import org.cloudfoundry.multiapps.controller.persistence.services.MtaDescriptorPreserverService;
+import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptor;
+import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService;
 import org.cloudfoundry.multiapps.controller.process.steps.ProcessContext;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 
@@ -22,13 +22,13 @@ public class ApplicationsPreserveCalculator {
 
     private final DeployedMta deployedMta;
     private final DeployedMta preservedMta;
-    private final MtaDescriptorPreserverService mtaDescriptorPreserverService;
+    private final DescriptorPreserverService descriptorPreserverService;
 
     public ApplicationsPreserveCalculator(DeployedMta deployedMta, DeployedMta preservedMta,
-                                          MtaDescriptorPreserverService mtaDescriptorPreserverService) {
+                                          DescriptorPreserverService descriptorPreserverService) {
         this.deployedMta = deployedMta;
         this.preservedMta = preservedMta;
-        this.mtaDescriptorPreserverService = mtaDescriptorPreserverService;
+        this.descriptorPreserverService = descriptorPreserverService;
     }
 
     public List<CloudApplication> calculateAppsToPreserve(List<CloudApplication> appsToUndeploy, String checksumOfCurrentDescriptor) {
@@ -98,12 +98,12 @@ public class ApplicationsPreserveCalculator {
                                                                               .findFirst();
 
         if (optionalPreservedMtaDescriptorChecksum.isPresent()) {
-            List<MtaDescriptorPreserver> preservedDescriptors = mtaDescriptorPreserverService.createQuery()
-                                                                                             .mtaId(context.getVariable(Variables.MTA_ID))
-                                                                                             .spaceId(context.getVariable(Variables.SPACE_GUID))
-                                                                                             .namespace(context.getVariable(Variables.MTA_NAMESPACE))
-                                                                                             .checksum(optionalPreservedMtaDescriptorChecksum.get())
-                                                                                             .list();
+            List<PreservedDescriptor> preservedDescriptors = descriptorPreserverService.createQuery()
+                                                                                       .mtaId(context.getVariable(Variables.MTA_ID))
+                                                                                       .spaceId(context.getVariable(Variables.SPACE_GUID))
+                                                                                       .namespace(context.getVariable(Variables.MTA_NAMESPACE))
+                                                                                       .checksum(optionalPreservedMtaDescriptorChecksum.get())
+                                                                                       .list();
             if (preservedDescriptors.isEmpty()) {
                 appsToUndeploy.addAll(preservedMta.getApplications());
                 return appsToUndeploy;

@@ -24,6 +24,7 @@ public class Constants {
     public static final String UNKNOWN_LABEL = "unknown label";
     public static final String UNKNOWN_PLAN = "unknown plan";
     public static final String MTA_PRESERVED_NAMESPACE = "mta-preserved";
+    public static final String MTA_FOR_DELETION_PREFIX = "to-be-deleted";
 
     protected Constants() {
     }

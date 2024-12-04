@@ -8,6 +8,7 @@ import org.cloudfoundry.multiapps.controller.core.cf.metadata.MtaMetadataLabels;
 import org.cloudfoundry.multiapps.controller.core.cf.metadata.util.MtaMetadataUtil;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
+import org.cloudfoundry.multiapps.controller.process.Messages;
 import org.cloudfoundry.multiapps.controller.process.variables.Variables;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
@@ -20,7 +21,7 @@ public class RemoveMtaPreservedMetadataStep extends SyncFlowableStep {
 
     @Override
     protected StepPhase executeStep(ProcessContext context) throws Exception {
-        getStepLogger().debug("Deleting metadata of preserved mta applications");
+        getStepLogger().debug(Messages.DELETING_METADATA_OF_PRESERVED_MTA_APPLICATIONS);
         DeployedMta preservedMta = context.getVariable(Variables.PRESERVED_MTA);
         CloudControllerClient client = context.getControllerClient();
 
@@ -28,7 +29,7 @@ public class RemoveMtaPreservedMetadataStep extends SyncFlowableStep {
         String hashedMtaNamespace = mtaNamespace != null ? MtaMetadataUtil.getHashedLabel(mtaNamespace) : null;
 
         for (DeployedMtaApplication application : preservedMta.getApplications()) {
-            getStepLogger().debug("Remove mta preserved metadata for application \"{0}\"", application.getName());
+            getStepLogger().debug(Messages.REMOVE_MTA_PRESERVED_METADATA_FOR_APPLICATION_0, application.getName());
             client.updateApplicationMetadata(application.getGuid(), Metadata.builder()
                                                                             .from(application.getV3Metadata())
                                                                             .label(MtaMetadataLabels.MTA_NAMESPACE, hashedMtaNamespace)
@@ -41,7 +42,7 @@ public class RemoveMtaPreservedMetadataStep extends SyncFlowableStep {
 
     @Override
     protected String getStepErrorMessage(ProcessContext context) {
-        return "Error during removal of mta preserved metadata";
+        return Messages.ERROR_DURING_REMOVAL_MTA_PRESREVED_METADATA;
     }
 
 }
