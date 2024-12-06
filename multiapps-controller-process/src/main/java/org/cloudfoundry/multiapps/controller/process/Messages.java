@@ -75,7 +75,6 @@ public class Messages {
     public static final String DESCRIPTOR_CHECKSUM_NOT_SET_IN_APPLICATION_ROLLBACK_CANNOT_BE_DONE = "Descriptor checksum is not set in the application metadata and rollback operation cannot be done";
     public static final String REVERT_OPERATION_CANNOT_BE_DONE_PRESERVED_APPLICATIONS_HAVE_DIFFERENT_CHECKSUMS = "Revert operation cannot be done, preserved applications have different checksums!";
     public static final String REVERT_MTA_ID_0_CANNOT_BE_DONE_MISSING_DESCRIPTOR = "Revert of mta id \"{0}\" cannot be done, missing descriptor to perform revert";
-    public static final String CHEKSUMS_OF_DESCRIPTOR_IN_PERSISTENCE_LAYER_AND_DEPLOYED_APP_NOT_MATCH = "Checksums of descriptor in persistence layer and deployed app not match and revert is not possible!";
     // Audit log messages
 
     // ERROR log messages

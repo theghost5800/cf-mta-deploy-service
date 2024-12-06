@@ -12,7 +12,6 @@ import org.cloudfoundry.multiapps.common.ContentException;
 import org.cloudfoundry.multiapps.controller.core.cf.detect.DeployedMtaDetector;
 import org.cloudfoundry.multiapps.controller.core.cf.metadata.MtaMetadataLabels;
 import org.cloudfoundry.multiapps.controller.core.model.DeployedMta;
-import org.cloudfoundry.multiapps.controller.core.model.DeployedMtaApplication;
 import org.cloudfoundry.multiapps.controller.core.util.NameUtil;
 import org.cloudfoundry.multiapps.controller.persistence.dto.PreservedDescriptor;
 import org.cloudfoundry.multiapps.controller.persistence.services.DescriptorPreserverService;
@@ -34,7 +33,7 @@ public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
     private DescriptorPreserverService descriptorPreserverService;
     private DeployedMtaDetector deployedMtaDetector;
     private OperationService operationService;
-    private Function<OperationService, ProcessConflictPreventer> conflictPreventerSupplier = ProcessConflictPreventer::new;
+    protected Function<OperationService, ProcessConflictPreventer> conflictPreventerSupplier = ProcessConflictPreventer::new;
 
     @Inject
     public PreparePreservedMtaForDeploymentStep(DescriptorPreserverService descriptorPreserverService,
@@ -114,16 +113,6 @@ public class PreparePreservedMtaForDeploymentStep extends SyncFlowableStep {
                                                             .singleResult();
         } catch (NoResultException e) {
             throw new ContentException(Messages.REVERT_MTA_ID_0_CANNOT_BE_DONE_MISSING_DESCRIPTOR, mtaId);
-        }
-
-        for (DeployedMtaApplication deployedApplication : preservedMta.getApplications()) {
-            String applicationChecksum = deployedApplication.getV3Metadata()
-                                                            .getLabels()
-                                                            .get(MtaMetadataLabels.MTA_DESCRIPTOR_CHECKSUM);
-            if (applicationChecksum == null && !preservedDescriptor.getChecksum()
-                                                                   .equals(applicationChecksum)) {
-                throw new ContentException(Messages.CHEKSUMS_OF_DESCRIPTOR_IN_PERSISTENCE_LAYER_AND_DEPLOYED_APP_NOT_MATCH);
-            }
         }
         return preservedDescriptor;
     }

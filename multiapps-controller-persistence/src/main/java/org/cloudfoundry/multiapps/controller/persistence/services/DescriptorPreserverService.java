@@ -20,12 +20,11 @@ import org.cloudfoundry.multiapps.mta.model.DeploymentDescriptor;
 @Named
 public class DescriptorPreserverService extends PersistenceService<PreservedDescriptor, PreservedDescriptorDto, Long> {
 
-    private DescriptorPreserverMapper descriptorPreserverMapper;
-
     @Inject
-    public DescriptorPreserverService(EntityManagerFactory entityManagerFactory, DescriptorPreserverMapper descriptorPreserverMapper) {
+    protected DescriptorPreserverMapper descriptorPreserverMapper;
+
+    public DescriptorPreserverService(EntityManagerFactory entityManagerFactory) {
         super(entityManagerFactory);
-        this.descriptorPreserverMapper = descriptorPreserverMapper;
     }
 
     public DescriptorPreserverQuery createQuery() {
