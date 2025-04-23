@@ -2,6 +2,7 @@ package org.cloudfoundry.multiapps.controller.core.cf.util;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public class UnresolvedModulesContentValidator implements ModulesContentValidato
 
         return allMtaModules.stream()
                             .filter(module -> !resolvedModuleNames.contains(module))
+                            .filter(moduleName -> !isResolvedModuleActive(moduleName, calculatedModules))
                             .collect(Collectors.toSet());
     }
 
@@ -42,6 +44,18 @@ public class UnresolvedModulesContentValidator implements ModulesContentValidato
         Set<String> resolvedModuleNames = new HashSet<>(moduleNames);
         resolvedModuleNames.addAll(deployedModules);
         return resolvedModuleNames;
+    }
+
+    private boolean isResolvedModuleActive(String moduleName, List<Module> calculatedModules) {
+        Optional<Module> optionalModule = calculatedModules.stream()
+                                                           .filter(module -> module.getName()
+                                                                                   .equals(moduleName))
+                                                           .findFirst();
+        if (optionalModule.isPresent()) {
+            return optionalModule.get()
+                                 .isActive();
+        }
+        return true;
     }
 
 }

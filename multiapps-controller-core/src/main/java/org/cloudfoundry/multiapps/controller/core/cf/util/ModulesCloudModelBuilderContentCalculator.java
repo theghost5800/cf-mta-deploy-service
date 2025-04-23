@@ -37,6 +37,7 @@ public class ModulesCloudModelBuilderContentCalculator implements CloudModelBuil
     public List<Module> calculateContentForBuilding(List<? extends Module> modulesForDeployment) {
         initializeModulesDependencyTypes(modulesForDeployment);
         List<Module> calculatedModules = modulesForDeployment.stream()
+                                                             .filter(this::isActive)
                                                              .filter(module -> shouldDeployModule(module, mtaModulesInArchive,
                                                                                                   deployedModules))
                                                              .filter(this::isModuleSpecifiedForDeployment)
@@ -92,5 +93,24 @@ public class ModulesCloudModelBuilderContentCalculator implements CloudModelBuil
     private boolean isDockerModule(Module module) {
         return module.getParameters()
                      .containsKey(SupportedParameters.DOCKER);
+    }
+
+    private boolean isActive(Module module) {
+        if (module.getMajorSchemaVersion() < 3) {
+            return true;
+        }
+
+        if (!module.isActive()) {
+            warnInactiveService(module);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void warnInactiveService(Module module) {
+        if (userMessageLogger != null) {
+            userMessageLogger.warn("Module \"{0}\" is inactive and will not be processed", module.getName());
+        }
     }
 }
