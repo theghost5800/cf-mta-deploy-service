@@ -194,7 +194,6 @@
       </multiInstanceLoopCharacteristics>
     </callActivity>
     <sequenceFlow id="continueDeployProcessFlow" sourceRef="deployModulesSequential" targetRef="createSubscriptionsTask"></sequenceFlow>
-    <sequenceFlow id="sid-6CF46904-BF5D-44BF-AF3F-6B9B0E41D800" sourceRef="deleteServiceKeysSubProcess" targetRef="deleteSubscriptionsTask"></sequenceFlow>
     <sequenceFlow id="flow50" sourceRef="addDomainsTask" targetRef="processBatchesSequentially"></sequenceFlow>
     <sequenceFlow id="sid-7E794918-D88A-4C75-BBD7-BBAFA727FBF5" sourceRef="processBatchesSequentially" targetRef="prepareModulesDeploymentTask"></sequenceFlow>
     <sequenceFlow id="flow139" sourceRef="collectSystemParametersTask" targetRef="prepareAppsRestartTask"></sequenceFlow>
@@ -230,12 +229,6 @@
     <sequenceFlow id="sid-FC7F56D7-4472-416D-B028-1ED6095D12A2" sourceRef="deleteServicesCallActivity" targetRef="updateSubscribersTask"></sequenceFlow>
     <sequenceFlow id="sid-49A212DC-E070-4ECD-8C04-FD205869CF1B" sourceRef="detachServicesFromMtaTask" targetRef="updateSubscribersTask"></sequenceFlow>
     <sequenceFlow id="sid-28CE5BFA-32C6-42FB-8296-2015C369E8DD" sourceRef="deleteDiscontinuedConfigurationEntriesTask" targetRef="shouldDeleteDiscontinuedServiceBrokersGateway"></sequenceFlow>
-    <sequenceFlow id="sid-82DC4073-CDBC-47E5-AFC3-B5FFD7AB1499" name="Don't delete service brokers" sourceRef="shouldDeleteDiscontinuedServiceBrokersGateway" targetRef="sid-19B8BC9E-6AEC-4F83-9AC6-C53216797F33"></sequenceFlow>
-    <sequenceFlow id="sid-9C29A3A5-DDC1-4A6D-B7DA-04C3367DC343" sourceRef="setUndeployPhaseInclusiveGateway" targetRef="deleteServiceKeysSubProcess">
-      <extensionElements>
-        <flowable:executionListener event="take" delegateExpression="${setUndeployPhase}"></flowable:executionListener>
-      </extensionElements>
-    </sequenceFlow>
     <sequenceFlow id="flowHasGitGateway" sourceRef="startEvent" targetRef="validateParametersTask"></sequenceFlow>
     <callActivity id="sid-2827E336-1827-4AC2-BCE2-AD2A8B3DE595" name="Backup Existing App Call Activity" flowable:async="true" calledElement="backupExistingAppSubProcess" flowable:calledElementType="key" flowable:inheritVariables="true" flowable:completeAsync="true" flowable:fallbackToDefaultTenant="false">
       <multiInstanceLoopCharacteristics isSequential="false" flowable:collection="appsToBackup" flowable:elementVariable="appToProcess">
@@ -251,7 +244,14 @@
     </sequenceFlow>
     <sequenceFlow id="sid-8FC695CB-74D1-43B1-BDF1-C472450BEC19" sourceRef="sid-19B8BC9E-6AEC-4F83-9AC6-C53216797F33" targetRef="undeployAppCallActivity"></sequenceFlow>
     <sequenceFlow id="sid-63741827-A046-4960-A5C2-DE8333C06752" sourceRef="undeployAppCallActivity" targetRef="sid-2827E336-1827-4AC2-BCE2-AD2A8B3DE595"></sequenceFlow>
-    <sequenceFlow id="sid-5F48B17E-DD8B-4609-86D4-61D2E10DFCC2" sourceRef="sid-2827E336-1827-4AC2-BCE2-AD2A8B3DE595" targetRef="shouldDeleteDiscontinuedServicesGateway"></sequenceFlow>
+    <sequenceFlow id="sid-9C29A3A5-DDC1-4A6D-B7DA-04C3367DC343" sourceRef="setUndeployPhaseInclusiveGateway" targetRef="deleteSubscriptionsTask">
+      <extensionElements>
+        <flowable:executionListener event="take" delegateExpression="${setUndeployPhase}"></flowable:executionListener>
+      </extensionElements>
+    </sequenceFlow>
+    <sequenceFlow id="sid-82DC4073-CDBC-47E5-AFC3-B5FFD7AB1499" name="Don't delete service brokers" sourceRef="shouldDeleteDiscontinuedServiceBrokersGateway" targetRef="sid-19B8BC9E-6AEC-4F83-9AC6-C53216797F33"></sequenceFlow>
+    <sequenceFlow id="sid-5F48B17E-DD8B-4609-86D4-61D2E10DFCC2" sourceRef="deleteServiceKeysSubProcess" targetRef="shouldDeleteDiscontinuedServicesGateway"></sequenceFlow>
+    <sequenceFlow id="sid-494A8540-2CB7-40EF-9740-EE4ED0267AD4" sourceRef="sid-2827E336-1827-4AC2-BCE2-AD2A8B3DE595" targetRef="deleteServiceKeysSubProcess"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_xs2-bg-deploy">
     <bpmndi:BPMNPlane bpmnElement="xs2-bg-deploy" id="BPMNPlane_xs2-bg-deploy">
@@ -274,10 +274,10 @@
         <omgdc:Bounds height="65.0" width="105.0" x="428.0" y="27.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="deleteServiceBrokersTask" id="BPMNShape_deleteServiceBrokersTask">
-        <omgdc:Bounds height="65.0" width="106.0" x="1095.0" y="585.0"></omgdc:Bounds>
+        <omgdc:Bounds height="65.0" width="106.0" x="1332.0" y="581.5"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="shouldDeleteDiscontinuedServiceBrokersGateway" id="BPMNShape_shouldDeleteDiscontinuedServiceBrokersGateway">
-        <omgdc:Bounds height="40.0" width="40.0" x="1234.0" y="523.5"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="1412.5" y="523.5"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="processExtensionDescriptorsTask" id="BPMNShape_processExtensionDescriptorsTask">
         <omgdc:Bounds height="65.0" width="117.0" x="870.0" y="27.0"></omgdc:Bounds>
@@ -289,7 +289,7 @@
         <omgdc:Bounds height="65.0" width="105.0" x="1222.0" y="27.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="deleteDiscontinuedConfigurationEntriesTask" id="BPMNShape_deleteDiscontinuedConfigurationEntriesTask">
-        <omgdc:Bounds height="65.0" width="111.0" x="1335.0" y="581.0"></omgdc:Bounds>
+        <omgdc:Bounds height="65.0" width="111.0" x="1485.0" y="581.5"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="collectBlueGreenSystemParametersTask" id="BPMNShape_collectBlueGreenSystemParametersTask">
         <omgdc:Bounds height="68.0" width="105.0" x="1222.0" y="120.0"></omgdc:Bounds>
@@ -316,7 +316,7 @@
         <omgdc:Bounds height="68.0" width="105.0" x="470.5" y="368.2500000000002"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="deleteSubscriptionsTask" id="BPMNShape_deleteSubscriptionsTask">
-        <omgdc:Bounds height="68.0" width="105.0" x="1488.0729559271892" y="580.0"></omgdc:Bounds>
+        <omgdc:Bounds height="68.0" width="105.0" x="1635.0" y="580.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="updateSubscribersTask" id="BPMNShape_updateSubscribersTask">
         <omgdc:Bounds height="65.0" width="107.0" x="32.0" y="581.0"></omgdc:Bounds>
@@ -397,7 +397,7 @@
         <omgdc:Bounds height="40.0" width="40.0" x="1755.0" y="510.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="undeployAppCallActivity" id="BPMNShape_undeployAppCallActivity">
-        <omgdc:Bounds height="80.0" width="100.0" x="750.5" y="555.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="975.0" y="555.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="deleteRemainingFileParts" id="BPMNShape_deleteRemainingFileParts">
         <omgdc:Bounds height="65.0" width="105.0" x="580.5" y="27.0"></omgdc:Bounds>
@@ -418,7 +418,7 @@
         <omgdc:Bounds height="40.0" width="40.0" x="810.0" y="382.2500000000002"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="sid-19B8BC9E-6AEC-4F83-9AC6-C53216797F33" id="BPMNShape_sid-19B8BC9E-6AEC-4F83-9AC6-C53216797F33">
-        <omgdc:Bounds height="70.0" width="106.0" x="875.5" y="560.0"></omgdc:Bounds>
+        <omgdc:Bounds height="70.0" width="106.0" x="1140.0" y="560.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="sid-5B2AE114-1CBF-47C2-82D5-4CB9379C6136" id="BPMNShape_sid-5B2AE114-1CBF-47C2-82D5-4CB9379C6136">
         <omgdc:Bounds height="40.0" width="40.0" x="1173.0" y="382.2500000000002"></omgdc:Bounds>
@@ -433,16 +433,16 @@
         <omgdc:Bounds height="31.0" width="31.0" x="975.0" y="891.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="sid-F9BE9E7F-9BF9-428B-96E7-D395381BF7AD" id="BPMNShape_sid-F9BE9E7F-9BF9-428B-96E7-D395381BF7AD">
-        <omgdc:Bounds height="40.0" width="40.0" x="1067.0" y="679.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="1173.0" y="675.25"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="sid-18F22FDF-C42D-4456-97F1-B31A0DE93B28" id="BPMNShape_sid-18F22FDF-C42D-4456-97F1-B31A0DE93B28">
-        <omgdc:Bounds height="31.0" width="31.0" x="1172.0" y="683.5"></omgdc:Bounds>
+        <omgdc:Bounds height="31.0" width="31.0" x="1369.5" y="679.75"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="deleteServiceKeysSubProcess" id="BPMNShape_deleteServiceKeysSubProcess">
-        <omgdc:Bounds height="62.0" width="105.0" x="1635.0" y="583.0"></omgdc:Bounds>
+        <omgdc:Bounds height="62.0" width="105.0" x="675.0" y="564.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="sid-2827E336-1827-4AC2-BCE2-AD2A8B3DE595" id="BPMNShape_sid-2827E336-1827-4AC2-BCE2-AD2A8B3DE595">
-        <omgdc:Bounds height="80.0" width="100.0" x="630.0" y="555.0"></omgdc:Bounds>
+        <omgdc:Bounds height="80.0" width="100.0" x="826.5" y="555.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="continueDeployProcessFlow" id="BPMNEdge_continueDeployProcessFlow" flowable:sourceDockerX="52.5" flowable:sourceDockerY="31.00000000000003" flowable:targetDockerX="52.5" flowable:targetDockerY="34.0">
         <omgdi:waypoint x="282.95000000000005" y="459.18518518518533"></omgdi:waypoint>
@@ -451,10 +451,8 @@
         <omgdi:waypoint x="470.4999999999932" y="402.10416666666674"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-80047DB4-2E71-43B5-A93B-687A54A02448" id="BPMNEdge_sid-80047DB4-2E71-43B5-A93B-687A54A02448" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="53.0" flowable:targetDockerY="35.0">
-        <omgdi:waypoint x="1067.0" y="699.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1037.0" y="699.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1037.0" y="595.0"></omgdi:waypoint>
-        <omgdi:waypoint x="981.4499999999999" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1193.0" y="675.25"></omgdi:waypoint>
+        <omgdi:waypoint x="1193.0" y="629.9499999999999"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-91F14D78-6B14-407B-8D03-DE7B6EC32F34" id="BPMNEdge_sid-91F14D78-6B14-407B-8D03-DE7B6EC32F34" flowable:sourceDockerX="54.5" flowable:sourceDockerY="33.5" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
         <omgdi:waypoint x="1141.4499999999616" y="402.2500000000002"></omgdi:waypoint>
@@ -480,8 +478,8 @@
         <omgdi:waypoint x="104.99999999999419" y="343.24193548387103"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-C50445C7-0A1F-4CD6-8C8E-CC480F50B507" id="BPMNEdge_sid-C50445C7-0A1F-4CD6-8C8E-CC480F50B507" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="15.5" flowable:targetDockerY="15.5">
-        <omgdi:waypoint x="1106.9400844930417" y="699.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1172.0" y="699.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1212.9448073919832" y="695.25"></omgdi:waypoint>
+        <omgdi:waypoint x="1369.5" y="695.25"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow129" id="BPMNEdge_flow129" flowable:sourceDockerX="52.5" flowable:sourceDockerY="37.5" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
         <omgdi:waypoint x="441.9499999999932" y="791.6964419475655"></omgdi:waypoint>
@@ -509,8 +507,8 @@
         <omgdi:waypoint x="761.8648608004792" y="839.0042397921873"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-63741827-A046-4960-A5C2-DE8333C06752" id="BPMNEdge_sid-63741827-A046-4960-A5C2-DE8333C06752" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="750.499999999985" y="595.0"></omgdi:waypoint>
-        <omgdi:waypoint x="729.9499999999999" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="974.9999999998852" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="926.4499999999728" y="595.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4" flowable:sourceDockerX="58.5" flowable:sourceDockerY="32.5" flowable:targetDockerX="58.5" flowable:targetDockerY="32.5">
         <omgdi:waypoint x="986.9499999999946" y="59.32272727272727"></omgdi:waypoint>
@@ -543,16 +541,16 @@
         <omgdi:waypoint x="1545.0" y="59.5"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-58D6EFB3-8909-49A1-B95F-E6EC40DD16B3" id="BPMNEdge_sid-58D6EFB3-8909-49A1-B95F-E6EC40DD16B3" flowable:sourceDockerX="15.5" flowable:sourceDockerY="15.5" flowable:targetDockerX="53.0" flowable:targetDockerY="32.5">
-        <omgdi:waypoint x="1180.7383169234652" y="685.0469494806148"></omgdi:waypoint>
-        <omgdi:waypoint x="1163.727300613497" y="649.9499999999999"></omgdi:waypoint>
+        <omgdi:waypoint x="1385.0" y="679.75"></omgdi:waypoint>
+        <omgdi:waypoint x="1385.0" y="646.4499999999999"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9" flowable:sourceDockerX="52.5" flowable:sourceDockerY="34.0" flowable:targetDockerX="52.5" flowable:targetDockerY="34.0">
         <omgdi:waypoint x="1379.9999999999977" y="154.0"></omgdi:waypoint>
         <omgdi:waypoint x="1326.95" y="154.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow45" id="BPMNEdge_flow45" flowable:sourceDockerX="53.0" flowable:sourceDockerY="32.5" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
-        <omgdi:waypoint x="1123.6748466257668" y="649.9499999999999"></omgdi:waypoint>
-        <omgdi:waypoint x="1095.54" y="687.561403508772"></omgdi:waypoint>
+        <omgdi:waypoint x="1332.0" y="636.4072265625001"></omgdi:waypoint>
+        <omgdi:waypoint x="1207.0179322964318" y="689.3030649588289"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow83" id="BPMNEdge_flow83" flowable:sourceDockerX="52.5" flowable:sourceDockerY="37.5" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
         <omgdi:waypoint x="876.5" y="828.9499999999999"></omgdi:waypoint>
@@ -575,12 +573,16 @@
         <omgdi:waypoint x="281.00139512454007" y="913.1992659231827"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow39" id="BPMNEdge_flow39" flowable:sourceDockerX="52.5" flowable:sourceDockerY="34.0" flowable:targetDockerX="55.5" flowable:targetDockerY="32.5">
-        <omgdi:waypoint x="1488.0729559271679" y="613.8250850738707"></omgdi:waypoint>
-        <omgdi:waypoint x="1445.9499999999687" y="613.6847434791212"></omgdi:waypoint>
+        <omgdi:waypoint x="1634.9999999998297" y="614.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1595.9499999998277" y="614.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-494A8540-2CB7-40EF-9740-EE4ED0267AD4" id="BPMNEdge_sid-494A8540-2CB7-40EF-9740-EE4ED0267AD4" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="52.5" flowable:targetDockerY="31.0">
+        <omgdi:waypoint x="826.5" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="779.9499999999999" y="595.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-8FC695CB-74D1-43B1-BDF1-C472450BEC19" id="BPMNEdge_sid-8FC695CB-74D1-43B1-BDF1-C472450BEC19" flowable:sourceDockerX="53.0" flowable:sourceDockerY="35.0" flowable:targetDockerX="50.0" flowable:targetDockerY="40.0">
-        <omgdi:waypoint x="875.5" y="595.0"></omgdi:waypoint>
-        <omgdi:waypoint x="850.4499999998164" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1140.0" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1074.95" y="595.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow36" id="BPMNEdge_flow36" flowable:sourceDockerX="53.5" flowable:sourceDockerY="34.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
         <omgdi:waypoint x="766.9499999999999" y="335.0"></omgdi:waypoint>
@@ -588,7 +590,7 @@
         <omgdi:waypoint x="787.0" y="402.0"></omgdi:waypoint>
         <omgdi:waypoint x="810.0891003460208" y="402.1343930635839"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="sid-9C29A3A5-DDC1-4A6D-B7DA-04C3367DC343" id="BPMNEdge_sid-9C29A3A5-DDC1-4A6D-B7DA-04C3367DC343" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="52.5" flowable:targetDockerY="31.0">
+      <bpmndi:BPMNEdge bpmnElement="sid-9C29A3A5-DDC1-4A6D-B7DA-04C3367DC343" id="BPMNEdge_sid-9C29A3A5-DDC1-4A6D-B7DA-04C3367DC343" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="104.0" flowable:targetDockerY="34.0">
         <omgdi:waypoint x="1775.0" y="549.9381391200952"></omgdi:waypoint>
         <omgdi:waypoint x="1775.0" y="614.0"></omgdi:waypoint>
         <omgdi:waypoint x="1739.95" y="614.0"></omgdi:waypoint>
@@ -596,10 +598,6 @@
       <bpmndi:BPMNEdge bpmnElement="sid-7BDC3D2A-5EA5-489B-A1C1-ACD672F5EE72" id="BPMNEdge_sid-7BDC3D2A-5EA5-489B-A1C1-ACD672F5EE72" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="52.5" flowable:targetDockerY="27.5">
         <omgdi:waypoint x="856.5" y="906.5"></omgdi:waypoint>
         <omgdi:waypoint x="804.9499999999749" y="906.5"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="sid-6CF46904-BF5D-44BF-AF3F-6B9B0E41D800" id="BPMNEdge_sid-6CF46904-BF5D-44BF-AF3F-6B9B0E41D800" flowable:sourceDockerX="52.5" flowable:sourceDockerY="31.0" flowable:targetDockerX="52.5" flowable:targetDockerY="34.0">
-        <omgdi:waypoint x="1634.999999999622" y="614.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1593.0229559269958" y="614.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="resumePhaseStarted" id="BPMNEdge_resumePhaseStarted" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="52.5" flowable:targetDockerY="34.0">
         <omgdi:waypoint x="849.9407295539032" y="402.2500000000002"></omgdi:waypoint>
@@ -634,19 +632,18 @@
         <omgdi:waypoint x="242.5" y="343.7500000000002"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="deleteDiscontinuedServiceBrokersFlow" id="BPMNEdge_deleteDiscontinuedServiceBrokersFlow" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="53.0" flowable:targetDockerY="32.5">
-        <omgdi:waypoint x="1254.0" y="563.4364470108695"></omgdi:waypoint>
-        <omgdi:waypoint x="1254.0" y="617.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1200.949999999978" y="617.25"></omgdi:waypoint>
+        <omgdi:waypoint x="1412.5" y="543.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1385.0" y="543.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1385.0" y="581.5"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-A545F747-FCFB-46E0-96B3-7555B8D922A4" id="BPMNEdge_sid-A545F747-FCFB-46E0-96B3-7555B8D922A4" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="15.5" flowable:targetDockerY="15.5">
         <omgdi:waypoint x="896.4412576684109" y="906.5"></omgdi:waypoint>
         <omgdi:waypoint x="975.0" y="906.5"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-28CE5BFA-32C6-42FB-8296-2015C369E8DD" id="BPMNEdge_sid-28CE5BFA-32C6-42FB-8296-2015C369E8DD" flowable:sourceDockerX="55.5" flowable:sourceDockerY="32.5" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
-        <omgdi:waypoint x="1334.999999999983" y="613.1372549019608"></omgdi:waypoint>
-        <omgdi:waypoint x="1314.0" y="613.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1314.0" y="543.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1273.7851239669421" y="543.3347107438017"></omgdi:waypoint>
+        <omgdi:waypoint x="1540.5" y="581.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1540.5" y="543.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1452.4091983317887" y="543.5"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-E29C0DB4-272C-4094-B566-FAE993E6F564" id="BPMNEdge_sid-E29C0DB4-272C-4094-B566-FAE993E6F564" flowable:sourceDockerX="15.5" flowable:sourceDockerY="15.5" flowable:targetDockerX="52.5" flowable:targetDockerY="37.5">
         <omgdi:waypoint x="990.5668824979955" y="891.0001434408175"></omgdi:waypoint>
@@ -700,15 +697,15 @@
         <omgdi:waypoint x="523.0" y="916.0"></omgdi:waypoint>
         <omgdi:waypoint x="308.9481444788602" y="913.183537173742"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="sid-5F48B17E-DD8B-4609-86D4-61D2E10DFCC2" id="BPMNEdge_sid-5F48B17E-DD8B-4609-86D4-61D2E10DFCC2" flowable:sourceDockerX="50.0" flowable:sourceDockerY="40.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
-        <omgdi:waypoint x="629.9999999999691" y="595.0"></omgdi:waypoint>
-        <omgdi:waypoint x="604.6604308985249" y="595.0"></omgdi:waypoint>
+      <bpmndi:BPMNEdge bpmnElement="sid-5F48B17E-DD8B-4609-86D4-61D2E10DFCC2" id="BPMNEdge_sid-5F48B17E-DD8B-4609-86D4-61D2E10DFCC2" flowable:sourceDockerX="1.0" flowable:sourceDockerY="31.0" flowable:targetDockerX="20.0" flowable:targetDockerY="20.0">
+        <omgdi:waypoint x="675.0" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="604.6608886450905" y="595.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-82DC4073-CDBC-47E5-AFC3-B5FFD7AB1499" id="BPMNEdge_sid-82DC4073-CDBC-47E5-AFC3-B5FFD7AB1499" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="53.0" flowable:targetDockerY="35.0">
-        <omgdi:waypoint x="1234.0413983440662" y="543.4540229885057"></omgdi:waypoint>
-        <omgdi:waypoint x="1037.0" y="543.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1037.0" y="595.0"></omgdi:waypoint>
-        <omgdi:waypoint x="981.4499999999999" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1412.5" y="543.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1314.25" y="543.5"></omgdi:waypoint>
+        <omgdi:waypoint x="1314.25" y="595.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1245.95" y="595.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="shouldDeployModulesSequentialFlow" id="BPMNEdge_shouldDeployModulesSequentialFlow" flowable:sourceDockerX="20.0" flowable:sourceDockerY="20.0" flowable:targetDockerX="52.5" flowable:targetDockerY="31.00000000000003">
         <omgdi:waypoint x="46.2586283185837" y="401.80752212389393"></omgdi:waypoint>
